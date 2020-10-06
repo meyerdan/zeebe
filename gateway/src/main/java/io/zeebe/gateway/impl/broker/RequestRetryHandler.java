@@ -27,6 +27,7 @@ import java.util.function.Function;
  * all partitions are tried. The request is retried only for specific errors such as connection
  * errors or resource exhausted errors. The request is not retried for time outs.
  */
+@SuppressWarnings("java:S119")
 public final class RequestRetryHandler {
 
   private final BrokerClient brokerClient;

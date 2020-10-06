@@ -17,7 +17,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import io.grpc.Status.Code;
-import io.grpc.StatusRuntimeException;
+import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import io.zeebe.gateway.api.util.StubbedBrokerClient;
 import io.zeebe.gateway.api.util.StubbedBrokerClient.RequestHandler;
@@ -437,7 +437,7 @@ public final class LongPollingActivateJobsTest {
             final int partitionId = request.getPartitionId();
 
             if (partitionId == 4) {
-              return new BrokerErrorResponse(
+              return new BrokerErrorResponse<>(
                   new BrokerError(ErrorCode.RESOURCE_EXHAUSTED, "backpressure"));
             } else {
               return noJobsAvailableStub.handle(request);
@@ -454,9 +454,9 @@ public final class LongPollingActivateJobsTest {
     verify(request.getResponseObserver(), never()).onNext(Mockito.any());
     verify(request.getResponseObserver(), never()).onCompleted();
 
-    final StatusRuntimeException statusRuntimeException =
-        (StatusRuntimeException) throwableCaptor.getValue();
-    assertThat(statusRuntimeException.getStatus().getCode()).isEqualTo(Code.RESOURCE_EXHAUSTED);
+    assertThat(throwableCaptor.getValue()).isInstanceOf(StatusException.class);
+    final StatusException exception = (StatusException) throwableCaptor.getValue();
+    assertThat(exception.getStatus().getCode()).isEqualTo(Code.RESOURCE_EXHAUSTED);
   }
 
   @Test

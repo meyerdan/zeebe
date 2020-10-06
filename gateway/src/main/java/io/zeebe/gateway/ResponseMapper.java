@@ -154,8 +154,9 @@ public final class ResponseMapper {
     return MsgPackConverter.convertToJson(bufferAsArray(customHeaders));
   }
 
+  @SuppressWarnings("java:S119")
   @FunctionalInterface
-  public interface BrokerResponseMapper<BrokerResponseDto, GrpcResponse> {
-    GrpcResponse apply(long key, BrokerResponseDto responseDto);
+  public interface BrokerResponseMapper<BrokerResponseDto, GrpcResponseT> {
+    GrpcResponseT apply(long key, BrokerResponseDto responseDto);
   }
 }
