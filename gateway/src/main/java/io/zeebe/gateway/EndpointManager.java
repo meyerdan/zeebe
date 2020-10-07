@@ -156,7 +156,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
           request,
           RequestMapper::toCreateWorkflowInstanceWithResultRequest,
           ResponseMapper::toCreateWorkflowInstanceWithResultResponse,
-          responseObserver,
+          new ErrorMappingStreamObserver<>(responseObserver),
           Duration.ofMillis(request.getRequestTimeout()));
     } else {
       sendRequestWithRetryPartitions(
