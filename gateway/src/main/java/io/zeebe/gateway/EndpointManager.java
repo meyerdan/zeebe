@@ -111,7 +111,8 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
   public void activateJobs(
       final ActivateJobsRequest request,
       final StreamObserver<ActivateJobsResponse> responseObserver) {
-    activateJobsHandler.activateJobs(request, new ErrorMappingStreamObserver<>(responseObserver));
+    activateJobsHandler.activateJobs(
+        request, ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -122,7 +123,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toCancelWorkflowInstanceRequest,
         ResponseMapper::toCancelWorkflowInstanceResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -133,7 +134,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toCompleteJobRequest,
         ResponseMapper::toCompleteJobResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -144,7 +145,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toCreateWorkflowInstanceRequest,
         ResponseMapper::toCreateWorkflowInstanceResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -156,14 +157,14 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
           request,
           RequestMapper::toCreateWorkflowInstanceWithResultRequest,
           ResponseMapper::toCreateWorkflowInstanceWithResultResponse,
-          new ErrorMappingStreamObserver<>(responseObserver),
+          ErrorMappingStreamObserver.ofStreamObserver(responseObserver),
           Duration.ofMillis(request.getRequestTimeout()));
     } else {
       sendRequestWithRetryPartitions(
           request,
           RequestMapper::toCreateWorkflowInstanceWithResultRequest,
           ResponseMapper::toCreateWorkflowInstanceWithResultResponse,
-          new ErrorMappingStreamObserver<>(responseObserver));
+          ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
     }
   }
 
@@ -176,7 +177,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toDeployWorkflowRequest,
         ResponseMapper::toDeployWorkflowResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -186,7 +187,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toFailJobRequest,
         ResponseMapper::toFailJobResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -196,7 +197,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toThrowErrorRequest,
         ResponseMapper::toThrowErrorResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -208,7 +209,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toPublishMessageRequest,
         ResponseMapper::toPublishMessageResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -219,7 +220,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toResolveIncidentRequest,
         ResponseMapper::toResolveIncidentResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
@@ -230,14 +231,14 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toSetVariablesRequest,
         ResponseMapper::toSetVariablesResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   @Override
   public void topology(
       final TopologyRequest request, final StreamObserver<TopologyResponse> responseObserver) {
     final ErrorMappingStreamObserver<TopologyResponse> wrappedObserver =
-        new ErrorMappingStreamObserver<>(responseObserver);
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver);
     final TopologyResponse.Builder topologyResponseBuilder = TopologyResponse.newBuilder();
     final BrokerClusterState topology = topologyManager.getTopology();
 
@@ -285,7 +286,7 @@ public final class EndpointManager extends GatewayGrpc.GatewayImplBase {
         request,
         RequestMapper::toUpdateJobRetriesRequest,
         ResponseMapper::toUpdateJobRetriesResponse,
-        new ErrorMappingStreamObserver<>(responseObserver));
+        ErrorMappingStreamObserver.ofStreamObserver(responseObserver));
   }
 
   private <GrpcRequestT, BrokerResponseT, GrpcResponseT> void sendRequest(

@@ -12,9 +12,10 @@ import static io.zeebe.util.sched.clock.ActorClock.currentTimeMillis;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import io.grpc.stub.ServerCallStreamObserver;
+import io.grpc.stub.ServerCalls;
 import io.grpc.stub.StreamObserver;
 import io.zeebe.gateway.Loggers;
-import io.zeebe.gateway.grpc.ErrorMappingStreamObserver;
 import io.zeebe.gateway.impl.broker.BrokerClient;
 import io.zeebe.gateway.impl.broker.cluster.BrokerClusterState;
 import io.zeebe.gateway.metrics.LongPollingMetrics;
@@ -80,10 +81,9 @@ public final class LongPollingActivateJobsHandler extends Actor implements Activ
   @Override
   public void activateJobs(
       final ActivateJobsRequest request,
-      final StreamObserver<ActivateJobsResponse> responseObserver) {
+      final ServerCallStreamObserver<ActivateJobsResponse> responseObserver) {
     final LongPollingActivateJobsRequest longPollingRequest =
-        new LongPollingActivateJobsRequest(
-            request, new ErrorMappingStreamObserver<>(responseObserver));
+        new LongPollingActivateJobsRequest(request, responseObserver);
     activateJobs(longPollingRequest);
   }
 
