@@ -44,20 +44,20 @@ import java.util.zip.CRC32;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-class MappedJournalSegmentWriter<E> implements JournalWriter<E> {
+class MappedJournalSegmentWriter implements JournalWriter {
 
   private final MappedByteBuffer mappedBuffer;
   private final ByteBuffer buffer;
-  private final JournalSegment<E> segment;
+  private final JournalSegment segment;
   private final int maxEntrySize;
   private final JournalIndex index;
   private final Namespace namespace;
   private final long firstIndex;
-  private Indexed<E> lastEntry;
+  private Indexed lastEntry;
 
   MappedJournalSegmentWriter(
       final MappedByteBuffer buffer,
-      final JournalSegment<E> segment,
+      final JournalSegment segment,
       final int maxEntrySize,
       final JournalIndex index,
       final Namespace namespace) {
@@ -86,7 +86,7 @@ class MappedJournalSegmentWriter<E> implements JournalWriter<E> {
   }
 
   @Override
-  public Indexed<E> getLastEntry() {
+  public Indexed<RaftLogEntry> getLastEntry() {
     return lastEntry;
   }
 
@@ -101,7 +101,7 @@ class MappedJournalSegmentWriter<E> implements JournalWriter<E> {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends E> Indexed<T> append(final T entry) {
+  public Indexed<RaftLogEntry> append(final RaftLogEntry entry) {
     // Store the entry index.
     final long index = getNextIndex();
 
@@ -146,15 +146,15 @@ class MappedJournalSegmentWriter<E> implements JournalWriter<E> {
     buffer.position(position + Integer.BYTES + Integer.BYTES + length);
 
     // Update the last entry with the correct index/term/length.
-    final Indexed<E> indexedEntry = new Indexed<>(index, entry, length);
+    final Indexed<RaftLogEntry> indexedEntry = new Indexed<>(index, entry, length);
     lastEntry = indexedEntry;
     this.index.index(lastEntry, position);
-    return (Indexed<T>) indexedEntry;
+    return indexedEntry;
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public void append(final Indexed<E> entry) {
+  public void append(final Indexed<RaftLogEntry> entry) {
     final long nextIndex = getNextIndex();
 
     // If the entry's index is greater than the next index in the segment, skip some entries.
@@ -203,7 +203,7 @@ class MappedJournalSegmentWriter<E> implements JournalWriter<E> {
         // If the stored checksum equals the computed checksum, return the entry.
         if (checksum == crc32.getValue()) {
           slice.rewind();
-          final E entry = namespace.deserialize(slice);
+          final RaftLogEntry entry = namespace.deserialize(slice);
           lastEntry = new Indexed<>(nextIndex, entry, length);
           this.index.index(lastEntry, position);
           nextIndex++;

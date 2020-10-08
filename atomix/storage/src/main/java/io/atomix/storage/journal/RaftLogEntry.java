@@ -14,19 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.atomix.raft.storage.log.entry;
+package io.atomix.storage.journal;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
-import io.atomix.raft.storage.log.RaftLog;
+import io.atomix.storage.protocol.EntryType;
+import org.agrona.DirectBuffer;
 
-/** Stores a state change in a {@link RaftLog}. */
-public abstract class RaftLogEntry {
+/** Stores a state change in a RaftLog. */
+public class RaftLogEntry {
 
-  protected final long term;
+  private long term;
+  private long timestamp;
+  private EntryType entryType;
+  private DirectBuffer entry;
 
-  public RaftLogEntry(final long term) {
+  public RaftLogEntry() {}
+
+  public RaftLogEntry(
+      final long term, final long timestamp, final EntryType entryType, final DirectBuffer entry) {
     this.term = term;
+    this.timestamp = timestamp;
+    this.entryType = entryType;
+    this.entry = entry;
   }
 
   /**
@@ -36,6 +46,31 @@ public abstract class RaftLogEntry {
    */
   public long term() {
     return term;
+  }
+
+  public void setTerm(final long term) {
+    this.term = term;
+  }
+
+  public void setTimestamp(final long timestamp) {
+    this.timestamp = timestamp;
+  }
+
+  public void setEntryType(final EntryType entryType) {
+    this.entryType = entryType;
+  }
+
+  public long timestamp() {
+    return timestamp;
+  }
+
+  public EntryType type() {
+    return entryType;
+  }
+
+
+  public DirectBuffer entry() {
+    return entry;
   }
 
   @Override

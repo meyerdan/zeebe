@@ -30,13 +30,16 @@ import java.util.Collection;
  * represent a server in the cluster. Each time the set of members changes or a property of a single
  * member changes, a new {@code ConfigurationEntry} must be logged for the configuration change.
  */
-public class ConfigurationEntry extends TimestampedEntry {
+public class ConfigurationEntry {
 
-  protected final Collection<RaftMember> members;
+  private final Collection<RaftMember> members;
+  private final long term;
+  private final long timestamp;
 
   public ConfigurationEntry(
       final long term, final long timestamp, final Collection<RaftMember> members) {
-    super(term, timestamp);
+    this.term = term;
+    this.timestamp = timestamp;
     this.members = members;
   }
 
@@ -47,6 +50,14 @@ public class ConfigurationEntry extends TimestampedEntry {
    */
   public Collection<RaftMember> members() {
     return members;
+  }
+
+  public long term() {
+    return term;
+  }
+
+  public long timestamp() {
+    return timestamp;
   }
 
   @Override

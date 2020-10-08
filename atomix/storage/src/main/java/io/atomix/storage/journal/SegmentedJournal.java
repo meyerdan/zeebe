@@ -45,7 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Segmented journal. */
-public class SegmentedJournal<E> implements Journal<E> {
+public class SegmentedJournal implements Journal {
   private static final int DEFAULT_INDEX_DENSITY = 200;
   private static final int SEGMENT_BUFFER_FACTOR = 3;
   private final JournalMetrics journalMetrics;
@@ -59,11 +59,11 @@ public class SegmentedJournal<E> implements Journal<E> {
   private final int maxEntrySize;
   private final int maxEntriesPerSegment;
   private final boolean flushOnCommit;
-  private final SegmentedJournalWriter<E> writer;
+  private final SegmentedJournalWriter writer;
   private volatile long commitIndex;
-  private final NavigableMap<Long, JournalSegment<E>> segments = new ConcurrentSkipListMap<>();
+  private final NavigableMap<Long, JournalSegment> segments = new ConcurrentSkipListMap<>();
   private final Collection<SegmentedJournalReader> readers = Sets.newConcurrentHashSet();
-  private volatile JournalSegment<E> currentSegment;
+  private volatile JournalSegment currentSegment;
   private volatile boolean open = true;
   private final long minFreeDiskSpace;
 
@@ -185,7 +185,7 @@ public class SegmentedJournal<E> implements Journal<E> {
    *
    * @return the collection of journal segments
    */
-  public Collection<JournalSegment<E>> segments() {
+  public Collection<JournalSegment> segments() {
     return segments.values();
   }
 
@@ -195,7 +195,7 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @param index the starting index
    * @return the journal segments starting with indexes greater than or equal to the given index
    */
-  public Collection<JournalSegment<E>> segments(final long index) {
+  public Collection<JournalSegment> segments(final long index) {
     return segments.tailMap(index).values();
   }
 
@@ -209,12 +209,12 @@ public class SegmentedJournal<E> implements Journal<E> {
   }
 
   @Override
-  public SegmentedJournalWriter<E> writer() {
+  public SegmentedJournalWriter writer() {
     return writer;
   }
 
   @Override
-  public SegmentedJournalReader<E> openReader(final long index) {
+  public SegmentedJournalReader openReader(final long index) {
     return openReader(index, SegmentedJournalReader.Mode.ALL);
   }
 
@@ -225,9 +225,9 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @param mode The mode in which to read entries.
    * @return The Raft log reader.
    */
-  public SegmentedJournalReader<E> openReader(
+  public SegmentedJournalReader openReader(
       final long index, final SegmentedJournalReader.Mode mode) {
-    final SegmentedJournalReader<E> reader = new SegmentedJournalReader<>(this, index, mode);
+    final SegmentedJournalReader reader = new SegmentedJournalReader(this, index, mode);
     readers.add(reader);
     return reader;
   }
@@ -255,15 +255,15 @@ public class SegmentedJournal<E> implements Journal<E> {
    *
    * @return A new journal writer.
    */
-  protected SegmentedJournalWriter<E> openWriter() {
-    return new SegmentedJournalWriter<>(this);
+  protected SegmentedJournalWriter openWriter() {
+    return new SegmentedJournalWriter(this);
   }
 
   /** Opens the segments. */
   private synchronized void open() {
     final long startTime = System.currentTimeMillis();
     // Load existing log segments from disk.
-    for (final JournalSegment<E> segment : loadSegments()) {
+    for (final JournalSegment segment : loadSegments()) {
       segments.put(segment.descriptor().index(), segment);
       journalMetrics.incSegmentCount();
     }
@@ -309,7 +309,7 @@ public class SegmentedJournal<E> implements Journal<E> {
 
   /** Resets the current segment, creating a new segment if necessary. */
   private synchronized void resetCurrentSegment() {
-    final JournalSegment<E> lastSegment = getLastSegment();
+    final JournalSegment lastSegment = getLastSegment();
     if (lastSegment != null) {
       currentSegment = lastSegment;
     } else {
@@ -334,16 +334,16 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @param index the starting index of the journal
    * @return the first segment
    */
-  JournalSegment<E> resetSegments(final long index) {
+  JournalSegment resetSegments(final long index) {
     assertOpen();
 
     // If the index already equals the first segment index, skip the reset.
-    final JournalSegment<E> firstSegment = getFirstSegment();
+    final JournalSegment firstSegment = getFirstSegment();
     if (index == firstSegment.index()) {
       return firstSegment;
     }
 
-    for (final JournalSegment<E> segment : segments.values()) {
+    for (final JournalSegment segment : segments.values()) {
       segment.close();
       segment.delete();
       journalMetrics.decSegmentCount();
@@ -368,9 +368,9 @@ public class SegmentedJournal<E> implements Journal<E> {
    *
    * @throws IllegalStateException if the segment manager is not open
    */
-  JournalSegment<E> getFirstSegment() {
+  JournalSegment getFirstSegment() {
     assertOpen();
-    final Map.Entry<Long, JournalSegment<E>> segment = segments.firstEntry();
+    final Map.Entry<Long, JournalSegment> segment = segments.firstEntry();
     return segment != null ? segment.getValue() : null;
   }
 
@@ -379,9 +379,9 @@ public class SegmentedJournal<E> implements Journal<E> {
    *
    * @throws IllegalStateException if the segment manager is not open
    */
-  JournalSegment<E> getLastSegment() {
+  JournalSegment getLastSegment() {
     assertOpen();
-    final Map.Entry<Long, JournalSegment<E>> segment = segments.lastEntry();
+    final Map.Entry<Long, JournalSegment> segment = segments.lastEntry();
     return segment != null ? segment.getValue() : null;
   }
 
@@ -391,7 +391,7 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @return The next segment.
    * @throws IllegalStateException if the segment manager is not open
    */
-  synchronized JournalSegment<E> getNextSegment() {
+  synchronized JournalSegment getNextSegment() {
     assertOpen();
     assertDiskSpace();
 
@@ -417,8 +417,8 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @param index The segment index with which to look up the next segment.
    * @return The next segment for the given index.
    */
-  JournalSegment<E> getNextSegment(final long index) {
-    final Map.Entry<Long, JournalSegment<E>> nextSegment = segments.higherEntry(index);
+  JournalSegment getNextSegment(final long index) {
+    final Map.Entry<Long, JournalSegment> nextSegment = segments.higherEntry(index);
     return nextSegment != null ? nextSegment.getValue() : null;
   }
 
@@ -428,7 +428,7 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @param index The index for which to return the segment.
    * @throws IllegalStateException if the segment manager is not open
    */
-  synchronized JournalSegment<E> getSegment(final long index) {
+  synchronized JournalSegment getSegment(final long index) {
     assertOpen();
     // Check if the current segment contains the given index first in order to prevent an
     // unnecessary map lookup.
@@ -437,7 +437,7 @@ public class SegmentedJournal<E> implements Journal<E> {
     }
 
     // If the index is in another segment, get the entry with the next lowest first index.
-    final Map.Entry<Long, JournalSegment<E>> segment = segments.floorEntry(index);
+    final Map.Entry<Long, JournalSegment> segment = segments.floorEntry(index);
     if (segment != null) {
       return segment.getValue();
     }
@@ -458,7 +458,7 @@ public class SegmentedJournal<E> implements Journal<E> {
   }
 
   /** Creates a new segment. */
-  JournalSegment<E> createSegment(final JournalSegmentDescriptor descriptor) {
+  JournalSegment createSegment(final JournalSegmentDescriptor descriptor) {
     final File segmentFile = JournalSegmentFile.createSegmentFile(name, directory, descriptor.id());
 
     final RandomAccessFile raf;
@@ -486,7 +486,7 @@ public class SegmentedJournal<E> implements Journal<E> {
         log.warn("Unexpected IOException on closing", e);
       }
     }
-    final JournalSegment<E> segment = newSegment(new JournalSegmentFile(segmentFile), descriptor);
+    final JournalSegment segment = newSegment(new JournalSegmentFile(segmentFile), descriptor);
     log.debug("Created segment: {}", segment);
     return segment;
   }
@@ -498,21 +498,21 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @param descriptor The segment descriptor.
    * @return The segment instance.
    */
-  protected JournalSegment<E> newSegment(
+  protected JournalSegment newSegment(
       final JournalSegmentFile segmentFile, final JournalSegmentDescriptor descriptor) {
-    return new JournalSegment<>(
+    return new JournalSegment(
         segmentFile, descriptor, storageLevel, maxEntrySize, namespace, journalIndexFactory.get());
   }
 
   /** Loads a segment. */
-  private JournalSegment<E> loadSegment(final long segmentId) {
+  private JournalSegment loadSegment(final long segmentId) {
     final File segmentFile = JournalSegmentFile.createSegmentFile(name, directory, segmentId);
     final ByteBuffer buffer = ByteBuffer.allocate(JournalSegmentDescriptor.BYTES);
     try (final FileChannel channel = openChannel(segmentFile)) {
       channel.read(buffer);
       buffer.flip();
       final JournalSegmentDescriptor descriptor = new JournalSegmentDescriptor(buffer);
-      final JournalSegment<E> segment = newSegment(new JournalSegmentFile(segmentFile), descriptor);
+      final JournalSegment segment = newSegment(new JournalSegmentFile(segmentFile), descriptor);
       log.debug("Loaded disk segment: {} ({})", descriptor.id(), segmentFile.getName());
       return segment;
     } catch (final IOException e) {
@@ -537,11 +537,11 @@ public class SegmentedJournal<E> implements Journal<E> {
    *
    * @return A collection of segments for the log.
    */
-  protected Collection<JournalSegment<E>> loadSegments() {
+  protected Collection<JournalSegment> loadSegments() {
     // Ensure log directories are created.
     directory.mkdirs();
 
-    final TreeMap<Long, JournalSegment<E>> segments = new TreeMap<>();
+    final TreeMap<Long, JournalSegment> segments = new TreeMap<>();
 
     // Iterate through all files in the log directory.
     for (final File file : directory.listFiles(File::isFile)) {
@@ -560,7 +560,7 @@ public class SegmentedJournal<E> implements Journal<E> {
         final JournalSegmentDescriptor descriptor = new JournalSegmentDescriptor(buffer);
 
         // Load the segment.
-        final JournalSegment<E> segment = loadSegment(descriptor.id());
+        final JournalSegment segment = loadSegment(descriptor.id());
 
         // Add the segment to the segments list.
         log.debug(
@@ -570,11 +570,11 @@ public class SegmentedJournal<E> implements Journal<E> {
     }
 
     // Verify that all the segments in the log align with one another.
-    JournalSegment<E> previousSegment = null;
+    JournalSegment previousSegment = null;
     boolean corrupted = false;
-    final Iterator<Map.Entry<Long, JournalSegment<E>>> iterator = segments.entrySet().iterator();
+    final Iterator<Map.Entry<Long, JournalSegment>> iterator = segments.entrySet().iterator();
     while (iterator.hasNext()) {
-      final JournalSegment<E> segment = iterator.next().getValue();
+      final JournalSegment segment = iterator.next().getValue();
       if (previousSegment != null && previousSegment.lastIndex() != segment.index() - 1) {
         log.warn(
             "Journal is inconsistent. {} is not aligned with prior segment {}",
@@ -634,7 +634,7 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @return indicates whether a segment can be removed from the journal
    */
   public boolean isCompactable(final long index) {
-    final Map.Entry<Long, JournalSegment<E>> segmentEntry = segments.floorEntry(index);
+    final Map.Entry<Long, JournalSegment> segmentEntry = segments.floorEntry(index);
     return segmentEntry != null && segments.headMap(segmentEntry.getValue().index()).size() > 0;
   }
 
@@ -645,7 +645,7 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @return the starting index of the last segment in the log
    */
   public long getCompactableIndex(final long index) {
-    final Map.Entry<Long, JournalSegment<E>> segmentEntry = segments.floorEntry(index);
+    final Map.Entry<Long, JournalSegment> segmentEntry = segments.floorEntry(index);
     return segmentEntry != null ? segmentEntry.getValue().index() : 0;
   }
 
@@ -657,9 +657,9 @@ public class SegmentedJournal<E> implements Journal<E> {
    * @param index The index up to which to compact the journal.
    */
   public void compact(final long index) {
-    final Map.Entry<Long, JournalSegment<E>> segmentEntry = segments.floorEntry(index);
+    final Map.Entry<Long, JournalSegment> segmentEntry = segments.floorEntry(index);
     if (segmentEntry != null) {
-      final SortedMap<Long, JournalSegment<E>> compactSegments =
+      final SortedMap<Long, JournalSegment> compactSegments =
           segments.headMap(segmentEntry.getValue().index());
       if (!compactSegments.isEmpty()) {
         log.debug("{} - Compacting {} segment(s)", name, compactSegments.size());
@@ -704,7 +704,7 @@ public class SegmentedJournal<E> implements Journal<E> {
   }
 
   /** Raft log builder. */
-  public static class Builder<E> implements io.atomix.utils.Builder<SegmentedJournal<E>> {
+  public static class Builder<E> implements io.atomix.utils.Builder<SegmentedJournal> {
 
     private static final boolean DEFAULT_FLUSH_ON_COMMIT = false;
     private static final String DEFAULT_NAME = "atomix";
@@ -899,8 +899,8 @@ public class SegmentedJournal<E> implements Journal<E> {
     }
 
     @Override
-    public SegmentedJournal<E> build() {
-      return new SegmentedJournal<>(
+    public SegmentedJournal build() {
+      return new SegmentedJournal(
           name,
           storageLevel,
           directory,

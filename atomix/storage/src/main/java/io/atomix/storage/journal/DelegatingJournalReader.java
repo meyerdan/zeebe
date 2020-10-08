@@ -19,10 +19,10 @@ package io.atomix.storage.journal;
 import static com.google.common.base.MoreObjects.toStringHelper;
 
 /** Journal reader delegate. */
-public class DelegatingJournalReader<E> implements JournalReader<E> {
-  private final JournalReader<E> delegate;
+public class DelegatingJournalReader implements JournalReader {
+  private final JournalReader delegate;
 
-  public DelegatingJournalReader(final JournalReader<E> delegate) {
+  public DelegatingJournalReader(final JournalReader delegate) {
     this.delegate = delegate;
   }
 
@@ -47,7 +47,7 @@ public class DelegatingJournalReader<E> implements JournalReader<E> {
   }
 
   @Override
-  public Indexed<E> getCurrentEntry() {
+  public Indexed<RaftLogEntry> getCurrentEntry() {
     return delegate.getCurrentEntry();
   }
 
@@ -62,7 +62,7 @@ public class DelegatingJournalReader<E> implements JournalReader<E> {
   }
 
   @Override
-  public Indexed<E> next() {
+  public Indexed<RaftLogEntry> next() {
     return delegate.next();
   }
 

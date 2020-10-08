@@ -16,7 +16,7 @@
  */
 
 /**
- * Provides {@link io.atomix.raft.storage.log.entry.RaftLogEntry} implementations used internally to
+ * Provides {@link io.atomix.storage.journal.RaftLogEntry} implementations used internally to
  * replicate state changes, sessions, and configuration changes in the cluster.
  */
 package io.atomix.raft.storage.log.entry;

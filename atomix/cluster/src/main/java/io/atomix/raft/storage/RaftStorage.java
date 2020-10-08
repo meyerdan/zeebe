@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import io.atomix.raft.storage.log.RaftLog;
-import io.atomix.raft.storage.log.entry.RaftLogEntry;
+import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.raft.storage.system.MetaStore;
 import io.atomix.storage.StorageException;
 import io.atomix.storage.StorageLevel;

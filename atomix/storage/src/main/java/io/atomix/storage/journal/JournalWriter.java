@@ -21,7 +21,7 @@ package io.atomix.storage.journal;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface JournalWriter<E> extends AutoCloseable {
+public interface JournalWriter extends AutoCloseable {
 
   /**
    * Returns the last written index.
@@ -35,7 +35,7 @@ public interface JournalWriter<E> extends AutoCloseable {
    *
    * @return The last entry written.
    */
-  Indexed<E> getLastEntry();
+  Indexed<RaftLogEntry> getLastEntry();
 
   /**
    * Returns the next index to be written.
@@ -50,14 +50,14 @@ public interface JournalWriter<E> extends AutoCloseable {
    * @param entry The entry to append.
    * @return The appended indexed entry.
    */
-  <T extends E> Indexed<T> append(T entry);
+  Indexed<RaftLogEntry> append(RaftLogEntry entry);
 
   /**
    * Appends an indexed entry to the log.
    *
    * @param entry The indexed entry to append.
    */
-  void append(Indexed<E> entry);
+  void append(Indexed<RaftLogEntry> entry);
 
   /**
    * Commits entries up to the given index.

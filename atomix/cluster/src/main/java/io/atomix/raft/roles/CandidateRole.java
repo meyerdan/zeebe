@@ -26,7 +26,7 @@ import io.atomix.raft.protocol.AppendResponse;
 import io.atomix.raft.protocol.RaftResponse;
 import io.atomix.raft.protocol.VoteRequest;
 import io.atomix.raft.protocol.VoteResponse;
-import io.atomix.raft.storage.log.entry.RaftLogEntry;
+import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.raft.utils.Quorum;
 import io.atomix.storage.journal.Indexed;
 import io.atomix.utils.concurrent.Scheduled;

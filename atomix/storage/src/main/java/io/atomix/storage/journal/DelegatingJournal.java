@@ -19,25 +19,25 @@ package io.atomix.storage.journal;
 import static com.google.common.base.MoreObjects.toStringHelper;
 
 /** Delegating journal. */
-public class DelegatingJournal<E> implements Journal<E> {
-  private final Journal<E> delegate;
+public class DelegatingJournal implements Journal {
+  private final Journal delegate;
 
-  public DelegatingJournal(final Journal<E> delegate) {
+  public DelegatingJournal(final Journal delegate) {
     this.delegate = delegate;
   }
 
   @Override
-  public JournalWriter<E> writer() {
+  public JournalWriter writer() {
     return delegate.writer();
   }
 
   @Override
-  public JournalReader<E> openReader(final long index) {
+  public JournalReader openReader(final long index) {
     return delegate.openReader(index);
   }
 
   @Override
-  public JournalReader<E> openReader(final long index, final JournalReader.Mode mode) {
+  public JournalReader openReader(final long index, final JournalReader.Mode mode) {
     return delegate.openReader(index, mode);
   }
 

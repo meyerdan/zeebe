@@ -32,7 +32,7 @@ import io.atomix.raft.impl.RaftContext;
 import io.atomix.raft.metrics.RaftReplicationMetrics;
 import io.atomix.raft.storage.log.RaftLogReader;
 import io.atomix.raft.storage.log.RaftLogWriter;
-import io.atomix.raft.storage.log.entry.RaftLogEntry;
+import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.raft.zeebe.ValidationResult;
 import io.atomix.raft.zeebe.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender.AppendListener;

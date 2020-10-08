@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import io.atomix.storage.StorageLevel;
 import io.atomix.storage.journal.JournalReader.Mode;
 import io.atomix.storage.journal.index.SparseJournalIndex;
+import io.atomix.storage.protocol.EntryType;
 import io.atomix.utils.serializer.Namespace;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,14 +52,18 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public abstract class AbstractJournalTest {
 
-  protected static final TestEntry ENTRY = new TestEntry(32);
+  protected static final RaftLogEntry ENTRY =
+      new RaftLogEntry(1, 1, EntryType.NULL_VAL, new UnsafeBuffer());
   private static final Namespace NAMESPACE =
-      Namespace.builder().register(TestEntry.class).register(byte[].class).build();
+      Namespace.builder()
+          // .register(TestEntry.class)
+          .register(byte[].class)
+          .build();
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   protected final int entriesPerSegment;
-  protected SegmentedJournal<TestEntry> journal;
+  protected SegmentedJournal<RaftLogEntry> journal;
 
   private final int maxSegmentSize;
   private final int cacheSize;
@@ -83,9 +89,9 @@ public abstract class AbstractJournalTest {
     return runs;
   }
 
-  protected SegmentedJournal<TestEntry> createJournal() throws IOException {
+  protected SegmentedJournal<RaftLogEntry> createJournal() throws IOException {
     final SparseJournalIndex index = new SparseJournalIndex(5);
-    return SegmentedJournal.<TestEntry>builder()
+    return SegmentedJournal.<RaftLogEntry>builder()
         .withName("test")
         .withDirectory(folder)
         .withNamespace(NAMESPACE)
@@ -99,7 +105,7 @@ public abstract class AbstractJournalTest {
   @Test
   public void shouldBeEmpty() {
     // given
-    final JournalReader<TestEntry> reader = journal.openReader(1, Mode.ALL);
+    final JournalReader reader = journal.openReader(1, Mode.ALL);
 
     // when
     final boolean empty = reader.isEmpty();
@@ -111,10 +117,10 @@ public abstract class AbstractJournalTest {
   @Test
   public void shouldNotBeEmpty() {
     // given
-    final JournalReader<TestEntry> reader = journal.openReader(1, Mode.ALL);
+    final JournalReader reader = journal.openReader(1, Mode.ALL);
 
     // when
-    journal.writer().append(new TestEntry(8));
+    journal.writer().append(AbstractJournalTest.getTestEntry(8));
     final boolean empty = reader.isEmpty();
 
     // then
@@ -124,10 +130,10 @@ public abstract class AbstractJournalTest {
   @Test
   public void shouldBeEmptyIfNothingCommitted() {
     // given
-    final JournalReader<TestEntry> reader = journal.openReader(1, Mode.COMMITS);
+    final JournalReader reader = journal.openReader(1, Mode.COMMITS);
 
     // when
-    journal.writer().append(new TestEntry(8));
+    journal.writer().append(AbstractJournalTest.getTestEntry(8));
     final boolean empty = reader.isEmpty();
 
     // then
@@ -137,10 +143,11 @@ public abstract class AbstractJournalTest {
   @Test
   public void shouldNotBeEmptyIfCommitted() {
     // given
-    final JournalReader<TestEntry> reader = journal.openReader(1, Mode.COMMITS);
+    final JournalReader reader = journal.openReader(1, Mode.COMMITS);
 
     // when
-    final Indexed<TestEntry> indexed = journal.writer().append(new TestEntry(8));
+    final Indexed<RaftLogEntry> indexed =
+        journal.writer().append(AbstractJournalTest.getTestEntry(8));
     journal.writer().commit(indexed.index());
     final boolean empty = reader.isEmpty();
 
@@ -162,11 +169,11 @@ public abstract class AbstractJournalTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testWriteRead() throws Exception {
-    final JournalWriter<TestEntry> writer = journal.writer();
-    JournalReader<TestEntry> reader = journal.openReader(1);
+    final JournalWriter writer = journal.writer();
+    JournalReader reader = journal.openReader(1);
 
     // Append a couple entries.
-    Indexed<TestEntry> indexed;
+    Indexed<RaftLogEntry> indexed;
     assertEquals(1, writer.getNextIndex());
     indexed = writer.append(ENTRY);
     assertEquals(1, indexed.index());
@@ -179,18 +186,18 @@ public abstract class AbstractJournalTest {
     assertFalse(reader.hasNext());
 
     // Test reading an entry
-    Indexed<TestEntry> entry1;
+    Indexed<RaftLogEntry> entry1;
     reader.reset();
-    entry1 = (Indexed) reader.next();
+    entry1 = reader.next();
     assertEquals(1, entry1.index());
     assertEquals(entry1, reader.getCurrentEntry());
     assertEquals(1, reader.getCurrentIndex());
 
     // Test reading a second entry
-    Indexed<TestEntry> entry2;
+    Indexed<RaftLogEntry> entry2;
     assertTrue(reader.hasNext());
     assertEquals(2, reader.getNextIndex());
-    entry2 = (Indexed) reader.next();
+    entry2 = reader.next();
     assertEquals(2, entry2.index());
     assertEquals(entry2, reader.getCurrentEntry());
     assertEquals(2, reader.getCurrentIndex());
@@ -258,8 +265,8 @@ public abstract class AbstractJournalTest {
 
   @Test
   public void testResetTruncateZero() throws Exception {
-    final JournalWriter<TestEntry> writer = journal.writer();
-    final JournalReader<TestEntry> reader = journal.openReader(1);
+    final JournalWriter writer = journal.writer();
+    final JournalReader reader = journal.openReader(1);
 
     assertEquals(0, writer.getLastIndex());
     writer.append(ENTRY);
@@ -291,11 +298,11 @@ public abstract class AbstractJournalTest {
   @Test
   public void testTruncateRead() throws Exception {
     final int i = 10;
-    final JournalWriter<TestEntry> writer = journal.writer();
-    final JournalReader<TestEntry> reader = journal.openReader(1);
+    final JournalWriter writer = journal.writer();
+    final JournalReader reader = journal.openReader(1);
 
     for (int j = 1; j <= i; j++) {
-      assertEquals(j, writer.append(new TestEntry(32)).index());
+      assertEquals(j, writer.append(ENTRY).index());
     }
 
     for (int j = 1; j <= i - 2; j++) {
@@ -306,11 +313,11 @@ public abstract class AbstractJournalTest {
     writer.truncate(i - 2);
 
     assertFalse(reader.hasNext());
-    assertEquals(i - 1, writer.append(new TestEntry(32)).index());
-    assertEquals(i, writer.append(new TestEntry(32)).index());
+    assertEquals(i - 1, writer.append(ENTRY).index());
+    assertEquals(i, writer.append(ENTRY).index());
 
     assertTrue(reader.hasNext());
-    Indexed<TestEntry> entry = reader.next();
+    Indexed<RaftLogEntry> entry = reader.next();
     assertEquals(i - 1, entry.index());
     assertTrue(reader.hasNext());
     entry = reader.next();
@@ -320,20 +327,20 @@ public abstract class AbstractJournalTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testWriteReadEntries() throws Exception {
-    final JournalWriter<TestEntry> writer = journal.writer();
-    final JournalReader<TestEntry> reader = journal.openReader(1);
+    final JournalWriter writer = journal.writer();
+    final JournalReader reader = journal.openReader(1);
 
     for (int i = 1; i <= entriesPerSegment * 5; i++) {
       writer.append(ENTRY);
       assertTrue(reader.hasNext());
-      Indexed<TestEntry> entry;
-      entry = (Indexed) reader.next();
+      Indexed<RaftLogEntry> entry;
+      entry = reader.next();
       assertEquals(i, entry.index());
-      assertEquals(32, entry.entry().bytes().length);
+      assertEquals(32, entry.entry().entry().capacity());
       reader.reset(i);
-      entry = (Indexed) reader.next();
+      entry = reader.next();
       assertEquals(i, entry.index());
-      assertEquals(32, entry.entry().bytes().length);
+      assertEquals(32, entry.entry().entry().capacity());
 
       if (i > 6) {
         reader.reset(i - 5);
@@ -350,41 +357,39 @@ public abstract class AbstractJournalTest {
       assertTrue(reader.hasNext());
       reader.reset(i);
       assertTrue(reader.hasNext());
-      entry = (Indexed) reader.next();
+      entry = reader.next();
       assertEquals(i, entry.index());
-      assertEquals(32, entry.entry().bytes().length);
+      assertEquals(32, entry.entry().entry().capacity());
     }
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testWriteReadCommittedEntries() throws Exception {
-    final JournalWriter<TestEntry> writer = journal.writer();
-    final JournalReader<TestEntry> reader = journal.openReader(1, JournalReader.Mode.COMMITS);
+    final JournalWriter writer = journal.writer();
+    final JournalReader reader = journal.openReader(1, JournalReader.Mode.COMMITS);
 
     for (int i = 1; i <= entriesPerSegment * 5; i++) {
       writer.append(ENTRY);
       assertFalse(reader.hasNext());
       writer.commit(i);
       assertTrue(reader.hasNext());
-      Indexed<TestEntry> entry;
-      entry = (Indexed) reader.next();
+      Indexed<RaftLogEntry> entry;
+      entry = reader.next();
       assertEquals(i, entry.index());
-      assertEquals(32, entry.entry().bytes().length);
+      assertEquals(32, entry.entry().entry().capacity());
       reader.reset(i);
-      entry = (Indexed) reader.next();
+      entry = reader.next();
       assertEquals(i, entry.index());
-      assertEquals(32, entry.entry().bytes().length);
+      assertEquals(32, entry.entry().entry().capacity());
     }
   }
 
   @Test
   public void testReadAfterCompact() throws Exception {
-    final JournalWriter<TestEntry> writer = journal.writer();
-    final JournalReader<TestEntry> uncommittedReader =
-        journal.openReader(1, JournalReader.Mode.ALL);
-    final JournalReader<TestEntry> committedReader =
-        journal.openReader(1, JournalReader.Mode.COMMITS);
+    final JournalWriter writer = journal.writer();
+    final JournalReader uncommittedReader = journal.openReader(1, JournalReader.Mode.ALL);
+    final JournalReader committedReader = journal.openReader(1, JournalReader.Mode.COMMITS);
 
     for (int i = 1; i <= entriesPerSegment * 10; i++) {
       assertEquals(i, writer.append(ENTRY).index());
@@ -425,14 +430,14 @@ public abstract class AbstractJournalTest {
     // given
     final int totalWrites = 10;
     int commitPosition = 6;
-    final Map<Integer, TestEntry> written = new HashMap<>();
-    try (final Journal<TestEntry> journal = createJournal()) {
-      final JournalWriter<TestEntry> writer = journal.writer();
-      final JournalReader<TestEntry> reader = journal.openReader(1, Mode.COMMITS);
+    final Map<Integer, RaftLogEntry> written = new HashMap<>();
+    try (final Journal journal = createJournal()) {
+      final JournalWriter writer = journal.writer();
+      final JournalReader reader = journal.openReader(1, Mode.COMMITS);
 
       int writerIndex;
       for (writerIndex = 1; writerIndex <= totalWrites - 2; writerIndex++) {
-        final TestEntry entry = getTestEntry(16);
+        final RaftLogEntry entry = getTestEntry(16);
         assertEquals(writerIndex, writer.append(entry).index());
         written.put(writerIndex, entry);
       }
@@ -442,7 +447,7 @@ public abstract class AbstractJournalTest {
       int readerIndex;
       for (readerIndex = 1; readerIndex <= commitPosition; readerIndex++) {
         assertTrue(reader.hasNext());
-        final Indexed<TestEntry> entry = reader.next();
+        final Indexed<RaftLogEntry> entry = reader.next();
         assertEquals(readerIndex, entry.index());
         assertEquals(entry.entry(), written.get(readerIndex));
       }
@@ -452,7 +457,7 @@ public abstract class AbstractJournalTest {
       writer.truncate(commitPosition + 1);
 
       for (writerIndex = commitPosition + 2; writerIndex <= totalWrites; writerIndex++) {
-        final TestEntry entry = getTestEntry(32);
+        final RaftLogEntry entry = getTestEntry(32);
         assertEquals(writerIndex, writer.append(entry).index());
         written.put(writerIndex, entry);
       }
@@ -462,17 +467,17 @@ public abstract class AbstractJournalTest {
 
       for (; readerIndex <= commitPosition; readerIndex++) {
         assertTrue("Expected to find entry at index " + readerIndex, reader.hasNext());
-        final Indexed<TestEntry> entry = reader.next();
+        final Indexed<RaftLogEntry> entry = reader.next();
         assertEquals(readerIndex, entry.index());
         assertEquals(entry.entry(), written.get(readerIndex));
       }
     }
   }
 
-  private TestEntry getTestEntry(final int size) {
+  public static RaftLogEntry getTestEntry(final int size) {
     final byte[] bytes = new byte[size];
     ThreadLocalRandom.current().nextBytes(bytes);
-    return new TestEntry(bytes);
+    return new RaftLogEntry(1, 1, EntryType.NULL_VAL, new UnsafeBuffer(bytes));
   }
 
   @Before

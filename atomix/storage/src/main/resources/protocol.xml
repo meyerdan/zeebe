@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+  xmlns:xi="http://www.w3.org/2001/XInclude" package="io.atomix.storage.protocol"
+  id="0" version="1" semanticVersion="${project.version}"
+  description="Zeebe Protocol" byteOrder="littleEndian">
+
+  <xi:include href="../../../../protocol/src/main/resources/common-types.xml"/>
+
+  <types>
+    <enum name="EntryType" encodingType="uint8" semanticType="String"
+      description="The type of Raft entry">
+      <validValue name="ZEEBE">0</validValue>
+      <validValue name="CONFIGURATION">1</validValue>
+      <validValue name="INITIALIZE">2</validValue>
+    </enum>
+
+    <enum name="Role" encodingType="uint8">
+      <validValue name="INACTIVE">0</validValue>
+      <validValue name="PASSIVE">1</validValue>
+      <validValue name="PROMOTABLE">2</validValue>
+      <validValue name="ACTIVE">3</validValue>
+    </enum>
+  </types>
+
+  <sbe:message name="Entry" id="1">
+    <field name="term" id="1" type="uint64"/>
+    <field name="entryType" id="2" type="EntryType"/>
+    <field name="timestamp" id="3" type="uint64"/>
+    <data name="entry" id="4" type="varDataEncoding"/>
+  </sbe:message>
+
+  <sbe:message name="Zeebe" id="2">
+    <field name="lowestPosition" id="1" type="uint64"/>
+    <field name="highestPosition" id="2" type="uint64"/>
+    <data name="data" id="3" type="varDataEncoding"/>
+  </sbe:message>
+
+  <sbe:message name="Configuration" id="3">
+    <group name="raftMembers" id="1">
+      <field name="hash" id="2" type="int32"/>
+      <field name="role" id="3" type="Role"/>
+      <field name="updated" id="4" type="uint64"/>
+      <data name="memberId" id="5" type="varDataEncoding"/>
+    </group>
+  </sbe:message>
+</sbe:messageSchema>

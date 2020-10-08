@@ -32,7 +32,7 @@ public abstract class PersistentJournalTest extends AbstractJournalTest {
   public void testCompactAndRecover() throws Exception {
 
     // Write three segments to the journal.
-    JournalWriter<TestEntry> writer = journal.writer();
+    JournalWriter writer = journal.writer();
     for (int i = 0; i < entriesPerSegment * 3; i++) {
       writer.append(ENTRY);
     }
@@ -47,7 +47,7 @@ public abstract class PersistentJournalTest extends AbstractJournalTest {
     // Reopen the journal and create a reader.
     journal = createJournal();
     writer = journal.writer();
-    final JournalReader<TestEntry> reader = journal.openReader(1, JournalReader.Mode.COMMITS);
+    final JournalReader reader = journal.openReader(1, JournalReader.Mode.COMMITS);
     writer.append(ENTRY);
     writer.append(ENTRY);
     writer.commit(entriesPerSegment * 3);

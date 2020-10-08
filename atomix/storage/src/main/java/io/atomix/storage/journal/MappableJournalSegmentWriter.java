@@ -24,18 +24,18 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 /** Mappable log segment writer. */
-class MappableJournalSegmentWriter<E> implements JournalWriter<E> {
+class MappableJournalSegmentWriter implements JournalWriter {
 
   private final FileChannel channel;
-  private final JournalSegment<E> segment;
+  private final JournalSegment segment;
   private final int maxEntrySize;
   private final JournalIndex index;
   private final Namespace namespace;
-  private JournalWriter<E> writer;
+  private JournalWriter writer;
 
   MappableJournalSegmentWriter(
       final FileChannel channel,
-      final JournalSegment<E> segment,
+      final JournalSegment segment,
       final int maxEntrySize,
       final JournalIndex index,
       final Namespace namespace) {
@@ -45,7 +45,7 @@ class MappableJournalSegmentWriter<E> implements JournalWriter<E> {
     this.index = index;
     this.namespace = namespace;
     writer =
-        new FileChannelJournalSegmentWriter<>(channel, segment, maxEntrySize, index, namespace);
+        new FileChannelJournalSegmentWriter(channel, segment, maxEntrySize, index, namespace);
   }
 
   /**
@@ -55,11 +55,11 @@ class MappableJournalSegmentWriter<E> implements JournalWriter<E> {
    */
   MappedByteBuffer map() {
     if (writer instanceof MappedJournalSegmentWriter) {
-      return ((MappedJournalSegmentWriter<E>) writer).buffer();
+      return ((MappedJournalSegmentWriter) writer).buffer();
     }
 
     try {
-      final JournalWriter<E> writer = this.writer;
+      final JournalWriter writer = this.writer;
       final MappedByteBuffer buffer =
           channel.map(FileChannel.MapMode.READ_WRITE, 0, segment.descriptor().maxSegmentSize());
       this.writer =
@@ -74,17 +74,17 @@ class MappableJournalSegmentWriter<E> implements JournalWriter<E> {
   /** Unmaps the mapped buffer. */
   void unmap() {
     if (writer instanceof MappedJournalSegmentWriter) {
-      final JournalWriter<E> writer = this.writer;
+      final JournalWriter writer = this.writer;
       this.writer =
-          new FileChannelJournalSegmentWriter<>(channel, segment, maxEntrySize, index, namespace);
+          new FileChannelJournalSegmentWriter(channel, segment, maxEntrySize, index, namespace);
       writer.close();
     }
   }
 
   MappedByteBuffer buffer() {
-    final JournalWriter<E> writer = this.writer;
+    final JournalWriter writer = this.writer;
     if (writer instanceof MappedJournalSegmentWriter) {
-      return ((MappedJournalSegmentWriter<E>) writer).buffer();
+      return ((MappedJournalSegmentWriter) writer).buffer();
     }
     return null;
   }
@@ -117,7 +117,7 @@ class MappableJournalSegmentWriter<E> implements JournalWriter<E> {
   }
 
   @Override
-  public Indexed<E> getLastEntry() {
+  public Indexed<RaftLogEntry> getLastEntry() {
     return writer.getLastEntry();
   }
 
@@ -127,12 +127,12 @@ class MappableJournalSegmentWriter<E> implements JournalWriter<E> {
   }
 
   @Override
-  public <T extends E> Indexed<T> append(final T entry) {
+  public  Indexed<RaftLogEntry> append(final RaftLogEntry entry) {
     return writer.append(entry);
   }
 
   @Override
-  public void append(final Indexed<E> entry) {
+  public void append(final Indexed<RaftLogEntry> entry) {
     writer.append(entry);
   }
 

@@ -24,7 +24,7 @@ import static org.junit.Assume.assumeTrue;
 import com.google.common.base.Stopwatch;
 import io.atomix.raft.RaftCommitListener;
 import io.atomix.raft.partition.impl.RaftPartitionServer;
-import io.atomix.raft.storage.log.entry.RaftLogEntry;
+import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.raft.zeebe.util.TestAppender;
 import io.atomix.raft.zeebe.util.ZeebeTestHelper;
 import io.atomix.raft.zeebe.util.ZeebeTestNode;

@@ -24,17 +24,17 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /** Mappable log segment reader. */
-class MappableJournalSegmentReader<E> implements JournalReader<E> {
-  private final JournalSegment<E> segment;
+class MappableJournalSegmentReader implements JournalReader {
+  private final JournalSegment segment;
   private final FileChannel channel;
   private final int maxEntrySize;
   private final JournalIndex index;
   private final Namespace namespace;
-  private JournalReader<E> reader;
+  private JournalReader reader;
 
   MappableJournalSegmentReader(
       final FileChannel channel,
-      final JournalSegment<E> segment,
+      final JournalSegment segment,
       final int maxEntrySize,
       final JournalIndex index,
       final Namespace namespace) {
@@ -43,8 +43,7 @@ class MappableJournalSegmentReader<E> implements JournalReader<E> {
     this.maxEntrySize = maxEntrySize;
     this.index = index;
     this.namespace = namespace;
-    reader =
-        new FileChannelJournalSegmentReader<>(channel, segment, maxEntrySize, index, namespace);
+    reader = new FileChannelJournalSegmentReader(channel, segment, maxEntrySize, index, namespace);
   }
 
   /**
@@ -54,9 +53,9 @@ class MappableJournalSegmentReader<E> implements JournalReader<E> {
    */
   void map(final ByteBuffer buffer) {
     if (!(reader instanceof MappedJournalSegmentReader)) {
-      final JournalReader<E> reader = this.reader;
+      final JournalReader reader = this.reader;
       this.reader =
-          new MappedJournalSegmentReader<>(buffer, segment, maxEntrySize, index, namespace);
+          new MappedJournalSegmentReader(buffer, segment, maxEntrySize, index, namespace);
       this.reader.reset(reader.getNextIndex());
       reader.close();
     }
@@ -65,9 +64,9 @@ class MappableJournalSegmentReader<E> implements JournalReader<E> {
   /** Converts the reader to an unmapped reader. */
   void unmap() {
     if (reader instanceof MappedJournalSegmentReader) {
-      final JournalReader<E> reader = this.reader;
+      final JournalReader reader = this.reader;
       this.reader =
-          new FileChannelJournalSegmentReader<>(channel, segment, maxEntrySize, index, namespace);
+          new FileChannelJournalSegmentReader(channel, segment, maxEntrySize, index, namespace);
       this.reader.reset(reader.getNextIndex());
       reader.close();
     }
@@ -94,7 +93,7 @@ class MappableJournalSegmentReader<E> implements JournalReader<E> {
   }
 
   @Override
-  public Indexed<E> getCurrentEntry() {
+  public Indexed<RaftLogEntry> getCurrentEntry() {
     return reader.getCurrentEntry();
   }
 
@@ -109,7 +108,7 @@ class MappableJournalSegmentReader<E> implements JournalReader<E> {
   }
 
   @Override
-  public Indexed<E> next() {
+  public Indexed<RaftLogEntry> next() {
     return reader.next();
   }
 

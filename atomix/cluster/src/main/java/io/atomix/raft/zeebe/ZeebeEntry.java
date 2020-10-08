@@ -17,7 +17,6 @@ package io.atomix.raft.zeebe;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
-import io.atomix.raft.storage.log.entry.TimestampedEntry;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -30,11 +29,13 @@ import java.util.Objects;
  * was logged This gives state machines an approximation of time with which to react to the
  * application of entries to the state machine.
  */
-public class ZeebeEntry extends TimestampedEntry {
+public class ZeebeEntry {
 
   private final long lowestPosition;
   private final long highestPosition;
   private final ByteBuffer data;
+  private final long term;
+  private final long timestamp;
 
   public ZeebeEntry(
       final long term,
@@ -42,7 +43,8 @@ public class ZeebeEntry extends TimestampedEntry {
       final long lowestPosition,
       final long highestPosition,
       final ByteBuffer data) {
-    super(term, timestamp);
+    this.term = term;
+    this.timestamp = timestamp;
     this.lowestPosition = lowestPosition;
     this.highestPosition = highestPosition;
     this.data = data;
@@ -60,14 +62,17 @@ public class ZeebeEntry extends TimestampedEntry {
     return data;
   }
 
+  public long term() {
+    return term;
+  }
+
+  public long timestamp() {
+    return timestamp;
+  }
+
   @Override
-  public String toString() {
-    return toStringHelper(this)
-        .add("term", term())
-        .add("timestamp", timestamp())
-        .add("lowestPosition", lowestPosition())
-        .add("highestPosition", highestPosition())
-        .toString();
+  public int hashCode() {
+    return Objects.hash(lowestPosition, highestPosition, data, term, timestamp);
   }
 
   @Override
@@ -81,11 +86,20 @@ public class ZeebeEntry extends TimestampedEntry {
     final ZeebeEntry that = (ZeebeEntry) o;
     return lowestPosition == that.lowestPosition
         && highestPosition == that.highestPosition
+        && term == that.term
+        && timestamp == that.term
         && data.equals(that.data);
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(lowestPosition, highestPosition, data);
+  public String toString() {
+    return toStringHelper(this)
+        .add("term", term())
+        .add("timestamp", timestamp())
+        .add("lowestPosition", lowestPosition())
+        .add("highestPosition", highestPosition())
+        .add("term", term())
+        .add("timestamp", timestamp())
+        .toString();
   }
 }

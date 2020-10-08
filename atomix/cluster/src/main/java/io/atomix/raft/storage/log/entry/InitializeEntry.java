@@ -25,9 +25,21 @@ package io.atomix.raft.storage.log.entry;
  * following leader changes. Initialize entries are always the first entry to be committed at the
  * start of a leader's term.
  */
-public class InitializeEntry extends TimestampedEntry {
+public class InitializeEntry {
+
+  private final long term;
+  private final long timestamp;
 
   public InitializeEntry(final long term, final long timestamp) {
-    super(term, timestamp);
+    this.term = term;
+    this.timestamp = timestamp;
+  }
+
+  public long term() {
+    return term;
+  }
+
+  public long timestamp() {
+    return timestamp;
   }
 }

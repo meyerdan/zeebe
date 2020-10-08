@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class JournalSegment<E> implements AutoCloseable {
+public class JournalSegment implements AutoCloseable {
 
   private final JournalSegmentFile file;
   private final JournalSegmentDescriptor descriptor;
@@ -46,8 +46,8 @@ public class JournalSegment<E> implements AutoCloseable {
   private final int maxEntrySize;
   private final JournalIndex index;
   private final Namespace namespace;
-  private final MappableJournalSegmentWriter<E> writer;
-  private final Set<MappableJournalSegmentReader<E>> readers = Sets.newConcurrentHashSet();
+  private final MappableJournalSegmentWriter writer;
+  private final Set<MappableJournalSegmentReader> readers = Sets.newConcurrentHashSet();
   private final AtomicInteger references = new AtomicInteger();
   private boolean open = true;
 
@@ -197,7 +197,7 @@ public class JournalSegment<E> implements AutoCloseable {
    *
    * @return The segment writer.
    */
-  public MappableJournalSegmentWriter<E> writer() {
+  public MappableJournalSegmentWriter writer() {
     checkOpen();
     return writer;
   }
@@ -207,10 +207,10 @@ public class JournalSegment<E> implements AutoCloseable {
    *
    * @return A new segment reader.
    */
-  MappableJournalSegmentReader<E> createReader() {
+  MappableJournalSegmentReader createReader() {
     checkOpen();
-    final MappableJournalSegmentReader<E> reader =
-        new MappableJournalSegmentReader<>(
+    final MappableJournalSegmentReader reader =
+        new MappableJournalSegmentReader(
             openChannel(file.file()), this, maxEntrySize, index, namespace);
     final MappedByteBuffer buffer = writer.buffer();
     if (buffer != null) {
@@ -225,7 +225,7 @@ public class JournalSegment<E> implements AutoCloseable {
    *
    * @param reader the closed segment reader
    */
-  void closeReader(final MappableJournalSegmentReader<E> reader) {
+  void closeReader(final MappableJournalSegmentReader reader) {
     readers.remove(reader);
   }
 

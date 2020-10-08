@@ -20,15 +20,15 @@ package io.atomix.storage.journal;
 import java.util.NoSuchElementException;
 
 /** Raft log reader. */
-public class SegmentedJournalReader<E> implements JournalReader<E> {
+public class SegmentedJournalReader implements JournalReader {
 
-  private final SegmentedJournal<E> journal;
+  private final SegmentedJournal journal;
   private final Mode mode;
-  private JournalSegment<E> currentSegment;
-  private Indexed<E> previousEntry;
-  private MappableJournalSegmentReader<E> currentReader;
+  private JournalSegment currentSegment;
+  private Indexed previousEntry;
+  private MappableJournalSegmentReader currentReader;
 
-  SegmentedJournalReader(final SegmentedJournal<E> journal, final long index, final Mode mode) {
+  SegmentedJournalReader(final SegmentedJournal journal, final long index, final Mode mode) {
     this.journal = journal;
     this.mode = mode;
     initialize(index);
@@ -48,7 +48,7 @@ public class SegmentedJournalReader<E> implements JournalReader<E> {
 
   @Override
   public boolean isEmpty() {
-    final JournalSegment<E> firstSegment = journal.getFirstSegment();
+    final JournalSegment firstSegment = journal.getFirstSegment();
     if (firstSegment.isEmpty()) {
       return true;
     }
@@ -79,8 +79,8 @@ public class SegmentedJournalReader<E> implements JournalReader<E> {
   }
 
   @Override
-  public Indexed<E> getCurrentEntry() {
-    final Indexed<E> currentEntry = currentReader.getCurrentEntry();
+  public Indexed<RaftLogEntry> getCurrentEntry() {
+    final Indexed<RaftLogEntry> currentEntry = currentReader.getCurrentEntry();
     if (currentEntry != null) {
       return currentEntry;
     }
@@ -104,9 +104,9 @@ public class SegmentedJournalReader<E> implements JournalReader<E> {
   }
 
   @Override
-  public Indexed<E> next() {
+  public Indexed<RaftLogEntry> next() {
     if (!currentReader.hasNext()) {
-      final JournalSegment<E> nextSegment = journal.getNextSegment(currentSegment.index());
+      final JournalSegment nextSegment = journal.getNextSegment(currentSegment.index());
       if (nextSegment != null && nextSegment.index() == getNextIndex()) {
         previousEntry = currentReader.getCurrentEntry();
         replaceCurrentSegment(nextSegment);
@@ -151,7 +151,7 @@ public class SegmentedJournalReader<E> implements JournalReader<E> {
   /** Rewinds the journal to the given index. */
   private void rewind(final long index) {
     if (currentSegment.index() >= index) {
-      final JournalSegment<E> segment = journal.getSegment(index - 1);
+      final JournalSegment segment = journal.getSegment(index - 1);
       if (segment != null) {
         replaceCurrentSegment(segment);
       }
@@ -165,7 +165,7 @@ public class SegmentedJournalReader<E> implements JournalReader<E> {
   private void forward(final long index) {
     // skip to the correct segment if there is one
     if (!currentSegment.equals(journal.getLastSegment())) {
-      final JournalSegment<E> segment = journal.getSegment(index);
+      final JournalSegment segment = journal.getSegment(index);
       if (segment != null && !segment.equals(currentSegment)) {
         replaceCurrentSegment(segment);
       }
@@ -178,7 +178,7 @@ public class SegmentedJournalReader<E> implements JournalReader<E> {
 
   private boolean hasNextEntry() {
     if (!currentReader.hasNext()) {
-      final JournalSegment<E> nextSegment = journal.getNextSegment(currentSegment.index());
+      final JournalSegment nextSegment = journal.getNextSegment(currentSegment.index());
       if (nextSegment != null && nextSegment.index() == getNextIndex()) {
         previousEntry = currentReader.getCurrentEntry();
         replaceCurrentSegment(nextSegment);
@@ -189,7 +189,7 @@ public class SegmentedJournalReader<E> implements JournalReader<E> {
     return true;
   }
 
-  private void replaceCurrentSegment(final JournalSegment<E> nextSegment) {
+  private void replaceCurrentSegment(final JournalSegment nextSegment) {
     currentReader.close();
     currentSegment.release();
     currentSegment = nextSegment;

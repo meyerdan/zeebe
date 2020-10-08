@@ -23,14 +23,14 @@ import java.io.Closeable;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Journal<E> extends Closeable {
+public interface Journal extends Closeable {
 
   /**
    * Returns the journal writer.
    *
    * @return The journal writer.
    */
-  JournalWriter<E> writer();
+  JournalWriter writer();
 
   /**
    * Opens a new journal reader.
@@ -38,7 +38,7 @@ public interface Journal<E> extends Closeable {
    * @param index The index at which to start the reader.
    * @return A new journal reader.
    */
-  JournalReader<E> openReader(long index);
+  JournalReader openReader(long index);
 
   /**
    * Opens a new journal reader.
@@ -47,7 +47,7 @@ public interface Journal<E> extends Closeable {
    * @param mode the reader mode
    * @return A new journal reader.
    */
-  JournalReader<E> openReader(long index, JournalReader.Mode mode);
+  JournalReader openReader(long index, JournalReader.Mode mode);
 
   /**
    * Returns a boolean indicating whether the journal is open.
