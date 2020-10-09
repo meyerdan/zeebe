@@ -18,10 +18,10 @@ import static org.mockito.Mockito.verify;
 
 import io.grpc.Status.Code;
 import io.grpc.StatusException;
-import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import io.zeebe.gateway.api.util.StubbedBrokerClient;
 import io.zeebe.gateway.api.util.StubbedBrokerClient.RequestHandler;
+import io.zeebe.gateway.grpc.ServerStreamObserver;
 import io.zeebe.gateway.impl.broker.request.BrokerActivateJobsRequest;
 import io.zeebe.gateway.impl.broker.response.BrokerError;
 import io.zeebe.gateway.impl.broker.response.BrokerErrorResponse;
@@ -273,8 +273,7 @@ public final class LongPollingActivateJobsTest {
             .setMaxJobsToActivate(1)
             .setRequestTimeout(requestTimeout)
             .build();
-    final ServerCallStreamObserver<ActivateJobsResponse> responseSpy =
-        spy(ServerCallStreamObserver.class);
+    final ServerStreamObserver<ActivateJobsResponse> responseSpy = spy(ServerStreamObserver.class);
 
     final LongPollingActivateJobsRequest longPollingRequest =
         new LongPollingActivateJobsRequest(request, responseSpy);
@@ -299,7 +298,7 @@ public final class LongPollingActivateJobsTest {
                 .setMaxJobsToActivate(1)
                 .setRequestTimeout(requestTimeout)
                 .build(),
-            spy(ServerCallStreamObserver.class));
+            spy(ServerStreamObserver.class));
 
     final long longTimeout = 100000;
     final LongPollingActivateJobsRequest longRequest =
@@ -309,7 +308,7 @@ public final class LongPollingActivateJobsTest {
                 .setMaxJobsToActivate(1)
                 .setRequestTimeout(longTimeout)
                 .build(),
-            spy(ServerCallStreamObserver.class));
+            spy(ServerStreamObserver.class));
 
     handler.activateJobs(shortRequest);
     handler.activateJobs(longRequest);
@@ -338,7 +337,7 @@ public final class LongPollingActivateJobsTest {
                 .setMaxJobsToActivate(1)
                 .setRequestTimeout(-1)
                 .build(),
-            spy(ServerCallStreamObserver.class));
+            spy(ServerStreamObserver.class));
 
     // when
     handler.activateJobs(request);
@@ -362,7 +361,7 @@ public final class LongPollingActivateJobsTest {
                 .setMaxJobsToActivate(15)
                 .setRequestTimeout(500)
                 .build(),
-            spy(ServerCallStreamObserver.class));
+            spy(ServerStreamObserver.class));
 
     /* and a request handler that simulates the following:
         - on the first round no broker has any jobs
@@ -426,7 +425,7 @@ public final class LongPollingActivateJobsTest {
                 .setMaxJobsToActivate(15)
                 .setRequestTimeout(500)
                 .build(),
-            spy(ServerCallStreamObserver.class));
+            spy(ServerStreamObserver.class));
 
     brokerClient.registerHandler(
         BrokerActivateJobsRequest.class,
@@ -471,7 +470,7 @@ public final class LongPollingActivateJobsTest {
                 .setMaxJobsToActivate(15)
                 .setRequestTimeout(500)
                 .build(),
-            spy(ServerCallStreamObserver.class));
+            spy(ServerStreamObserver.class));
 
     brokerClient.registerHandler(
         BrokerActivateJobsRequest.class,
@@ -535,8 +534,7 @@ public final class LongPollingActivateJobsTest {
             .setType(jobType)
             .setMaxJobsToActivate(maxJobsToActivate)
             .build();
-    final ServerCallStreamObserver<ActivateJobsResponse> responseSpy =
-        spy(ServerCallStreamObserver.class);
+    final ServerStreamObserver<ActivateJobsResponse> responseSpy = spy(ServerStreamObserver.class);
 
     return new LongPollingActivateJobsRequest(request, responseSpy);
   }

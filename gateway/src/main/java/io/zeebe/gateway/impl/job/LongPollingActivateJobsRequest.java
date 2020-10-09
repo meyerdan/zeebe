@@ -7,9 +7,9 @@
  */
 package io.zeebe.gateway.impl.job;
 
-import io.grpc.stub.ServerCallStreamObserver;
 import io.zeebe.gateway.Loggers;
 import io.zeebe.gateway.RequestMapper;
+import io.zeebe.gateway.grpc.ServerStreamObserver;
 import io.zeebe.gateway.impl.broker.request.BrokerActivateJobsRequest;
 import io.zeebe.gateway.protocol.GatewayOuterClass.ActivateJobsRequest;
 import io.zeebe.gateway.protocol.GatewayOuterClass.ActivateJobsResponse;
@@ -21,7 +21,7 @@ public final class LongPollingActivateJobsRequest {
 
   private static final Logger LOG = Loggers.GATEWAY_LOGGER;
   private final BrokerActivateJobsRequest request;
-  private final ServerCallStreamObserver<ActivateJobsResponse> responseObserver;
+  private final ServerStreamObserver<ActivateJobsResponse> responseObserver;
   private final String jobType;
   private final String worker;
   private final int maxJobsToActivate;
@@ -33,7 +33,7 @@ public final class LongPollingActivateJobsRequest {
 
   public LongPollingActivateJobsRequest(
       final ActivateJobsRequest request,
-      final ServerCallStreamObserver<ActivateJobsResponse> responseObserver) {
+      final ServerStreamObserver<ActivateJobsResponse> responseObserver) {
     this(
         RequestMapper.toActivateJobsRequest(request),
         responseObserver,
@@ -45,7 +45,7 @@ public final class LongPollingActivateJobsRequest {
 
   private LongPollingActivateJobsRequest(
       final BrokerActivateJobsRequest request,
-      final ServerCallStreamObserver<ActivateJobsResponse> responseObserver,
+      final ServerStreamObserver<ActivateJobsResponse> responseObserver,
       final String jobType,
       final String worker,
       final int maxJobstoActivate,
@@ -101,7 +101,7 @@ public final class LongPollingActivateJobsRequest {
     return request;
   }
 
-  public ServerCallStreamObserver<ActivateJobsResponse> getResponseObserver() {
+  public ServerStreamObserver<ActivateJobsResponse> getResponseObserver() {
     return responseObserver;
   }
 

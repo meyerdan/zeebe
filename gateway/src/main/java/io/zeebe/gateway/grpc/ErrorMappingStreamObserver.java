@@ -14,18 +14,16 @@ import io.grpc.stub.StreamObserver;
 import io.zeebe.gateway.Loggers;
 
 /**
- * A {@link StreamObserver} decorator which will map errors to {@link StatusException} before
- * passing them on to the {@code delegate}.
+ * A {@link ServerCallStreamObserver} decorator which will map errors to {@link StatusException}
+ * before passing them on to the {@code delegate}. It will additionally suppress cancel exceptions;
+ * by default, the gRPC library will throw an exception if one tries to complete a call which was
+ * already cancelled. As we don't handle this (yet), simply log the instance.
  *
- * <p>Additionally, if the decorated {@link StreamObserver} is a {@link ServerCallStreamObserver},
- * it will install a cancellation handler to effectively suppress the {@code delegate} from throwing
- * an exception if the call was already cancelled.
- *
- * @param <GrpcResponseT>
+ * @param <GrpcResponseT> the expected type of the response
  */
 @SuppressWarnings("java:S119")
 public final class ErrorMappingStreamObserver<GrpcResponseT>
-    extends ServerCallStreamObserver<GrpcResponseT> {
+    extends ServerCallStreamObserver<GrpcResponseT> implements ServerStreamObserver<GrpcResponseT> {
   private static final GrpcErrorMapper DEFAULT_ERROR_MAPPER = new GrpcErrorMapper();
 
   private final ServerCallStreamObserver<GrpcResponseT> delegate;
@@ -43,6 +41,15 @@ public final class ErrorMappingStreamObserver<GrpcResponseT>
     suppressCancelException();
   }
 
+  /**
+   * Returns a new {@link ErrorMappingStreamObserver} wrapping the given {@link StreamObserver}.
+   *
+   * @param streamObserver the observer to wrap
+   * @param <GrpcResponseT> the expected response type
+   * @throws IllegalArgumentException if the given {@code streamObserver} is not a {@link
+   *     ServerCallStreamObserver}
+   * @return an {@link ErrorMappingStreamObserver} wrapping the given {@code streamObserver}
+   */
   public static <GrpcResponseT> ErrorMappingStreamObserver<GrpcResponseT> ofStreamObserver(
       final StreamObserver<GrpcResponseT> streamObserver) {
     if (!(streamObserver instanceof ServerCallStreamObserver)) {

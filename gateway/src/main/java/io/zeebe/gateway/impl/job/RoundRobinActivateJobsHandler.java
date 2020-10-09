@@ -7,11 +7,11 @@
  */
 package io.zeebe.gateway.impl.job;
 
-import io.grpc.stub.ServerCallStreamObserver;
 import io.zeebe.gateway.Loggers;
 import io.zeebe.gateway.RequestMapper;
 import io.zeebe.gateway.ResponseMapper;
 import io.zeebe.gateway.cmd.BrokerErrorException;
+import io.zeebe.gateway.grpc.ServerStreamObserver;
 import io.zeebe.gateway.impl.broker.BrokerClient;
 import io.zeebe.gateway.impl.broker.PartitionIdIterator;
 import io.zeebe.gateway.impl.broker.RequestDispatchStrategy;
@@ -46,7 +46,7 @@ public final class RoundRobinActivateJobsHandler implements ActivateJobsHandler 
   @Override
   public void activateJobs(
       final ActivateJobsRequest request,
-      final ServerCallStreamObserver<ActivateJobsResponse> responseObserver) {
+      final ServerStreamObserver<ActivateJobsResponse> responseObserver) {
     final BrokerClusterState topology = brokerClient.getTopologyManager().getTopology();
     if (topology != null) {
       final int partitionsCount = topology.getPartitionsCount();

@@ -99,6 +99,20 @@ public final class GrpcErrorMapper {
       case RESOURCE_EXHAUSTED:
         builder.setCode(Code.RESOURCE_EXHAUSTED_VALUE);
         break;
+      case PARTITION_LEADER_MISMATCH:
+        // return UNAVAILABLE to indicate to the user that retrying might solve the issue, as this
+        // is usually a transient issue
+        builder.setCode(Code.UNAVAILABLE_VALUE);
+        break;
+        // all the following are not errors which retrying (with the same gateway) will solve
+      case INVALID_MESSAGE_TEMPLATE:
+      case INVALID_DEPLOYMENT_PARTITION:
+      case MALFORMED_REQUEST:
+      case INVALID_CLIENT_VERSION:
+      case UNSUPPORTED_MESSAGE:
+      case INTERNAL_ERROR:
+      case SBE_UNKNOWN:
+      case NULL_VAL:
       default:
         builder.setCode(Code.INTERNAL_VALUE);
         message =
@@ -114,26 +128,31 @@ public final class GrpcErrorMapper {
     final String message =
         String.format(
             "Command rejected with code '%s': %s", rejection.getIntent(), rejection.getReason());
-    final Code code;
+    final Builder builder = Status.newBuilder().setMessage(message);
 
     switch (rejection.getType()) {
       case INVALID_ARGUMENT:
-        code = Code.INVALID_ARGUMENT;
+        builder.setCode(Code.INVALID_ARGUMENT_VALUE);
         break;
       case NOT_FOUND:
-        code = Code.NOT_FOUND;
+        builder.setCode(Code.NOT_FOUND_VALUE);
         break;
       case ALREADY_EXISTS:
-        code = Code.ALREADY_EXISTS;
+        builder.setCode(Code.ALREADY_EXISTS_VALUE);
         break;
       case INVALID_STATE:
-        code = Code.FAILED_PRECONDITION;
+        builder.setCode(Code.FAILED_PRECONDITION_VALUE);
         break;
+      case PROCESSING_ERROR:
+        builder.setCode(Code.INTERNAL_VALUE);
+        break;
+      case SBE_UNKNOWN:
+      case NULL_VAL:
       default:
-        code = Code.UNKNOWN;
+        builder.setCode(Code.UNKNOWN_VALUE);
         break;
     }
 
-    return Status.newBuilder().setMessage(message).setCode(code.getNumber()).build();
+    return builder.build();
   }
 }
