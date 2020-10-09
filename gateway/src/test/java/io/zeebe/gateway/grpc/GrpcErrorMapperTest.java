@@ -46,7 +46,7 @@ final class GrpcErrorMapperTest {
   }
 
   @Test
-  void shouldTraceLogResourceExhaustedError() {
+  void shouldLogResourceExhaustedErrorOnTrace() {
     // given
     final BrokerError brokerError =
         new BrokerError(ErrorCode.RESOURCE_EXHAUSTED, "Resources exhausted");
