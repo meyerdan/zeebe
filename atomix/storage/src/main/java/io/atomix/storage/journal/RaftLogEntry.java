@@ -60,6 +60,10 @@ public class RaftLogEntry {
     this.entryType = entryType;
   }
 
+  public void setEntry(final DirectBuffer entry) {
+    this.entry = entry;
+  }
+
   public long timestamp() {
     return timestamp;
   }
@@ -67,7 +71,6 @@ public class RaftLogEntry {
   public EntryType type() {
     return entryType;
   }
-
 
   public DirectBuffer entry() {
     return entry;

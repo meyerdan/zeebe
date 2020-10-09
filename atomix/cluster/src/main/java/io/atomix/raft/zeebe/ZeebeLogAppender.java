@@ -16,6 +16,7 @@
 package io.atomix.raft.zeebe;
 
 import io.atomix.storage.journal.Indexed;
+import io.atomix.storage.journal.ZeebeEntry;
 import java.nio.ByteBuffer;
 
 /**

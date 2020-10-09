@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 import io.atomix.raft.storage.log.entry.ConfigurationEntry;
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender.AppendListener;
 import io.atomix.storage.journal.Indexed;
 import io.zeebe.logstreams.spi.LogStorage;

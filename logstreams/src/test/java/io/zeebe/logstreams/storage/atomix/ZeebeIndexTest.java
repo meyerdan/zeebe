@@ -10,7 +10,7 @@ package io.zeebe.logstreams.storage.atomix;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.atomix.raft.storage.log.entry.InitializeEntry;
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.storage.journal.Indexed;
 import java.nio.ByteBuffer;
 import org.junit.Test;

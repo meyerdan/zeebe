@@ -19,7 +19,6 @@ package io.atomix.storage.journal;
 import io.atomix.storage.StorageException;
 import io.atomix.storage.journal.index.JournalIndex;
 import io.atomix.storage.journal.index.Position;
-import io.atomix.storage.protocol.EntryDecoder;
 import io.atomix.utils.serializer.Namespace;
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
@@ -29,7 +28,6 @@ import java.util.NoSuchElementException;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import org.agrona.DirectBuffer;
-import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
 /**
@@ -38,6 +36,8 @@ import org.agrona.concurrent.UnsafeBuffer;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 class FileChannelJournalSegmentReader implements JournalReader {
+
+  public static final EntrySerializer SERIALIZER = new EntrySerializer();
   private final FileChannel channel;
   private final int maxEntrySize;
   private final JournalIndex index;
@@ -46,7 +46,6 @@ class FileChannelJournalSegmentReader implements JournalReader {
   private final JournalSegment segment;
   private Indexed<RaftLogEntry> currentEntry;
   private Indexed<RaftLogEntry> nextEntry;
-  private final EntryDecoder decoder = new EntryDecoder();
 
   FileChannelJournalSegmentReader(
       final FileChannel channel,
@@ -215,13 +214,7 @@ class FileChannelJournalSegmentReader implements JournalReader {
     }
 
     final DirectBuffer buffer = new UnsafeBuffer(memory, memory.position(), length);
-    decoder.wrap(buffer, 0, length, 1);
-
-    final MutableDirectBuffer data = new UnsafeBuffer(ByteBuffer.allocate(decoder.entryLength()));
-    decoder.getEntry(data, 0, decoder.entryLength());
-    final RaftLogEntry entry =
-        new RaftLogEntry(decoder.term(), decoder.timestamp(), decoder.entryType(), data);
-    nextEntry = new Indexed<>(index, entry, length);
+    nextEntry = new Indexed<>(index, SERIALIZER.deserializeRaftLogEntry(buffer, 0), length);
 
     // If the stored checksum equals the computed checksum, set the next entry.
     //    final int limit = memory.limit();

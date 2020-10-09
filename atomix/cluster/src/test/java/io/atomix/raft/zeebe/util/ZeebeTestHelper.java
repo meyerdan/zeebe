@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import io.atomix.raft.RaftServer.Role;
 import io.atomix.raft.partition.impl.RaftPartitionServer;
 import io.atomix.raft.storage.log.RaftLogReader;
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender;
 import io.atomix.storage.journal.Indexed;
 import io.atomix.storage.journal.JournalReader.Mode;

@@ -17,7 +17,7 @@ import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.raft.storage.system.MetaStore;
 import io.atomix.raft.zeebe.EntryValidator;
 import io.atomix.raft.zeebe.ValidationResult;
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender;
 import io.atomix.storage.StorageLevel;
 import io.atomix.storage.journal.Indexed;

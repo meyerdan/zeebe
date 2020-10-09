@@ -9,7 +9,7 @@ package io.zeebe.broker.system.partitions.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.storage.journal.Indexed;
 import io.zeebe.broker.system.partitions.SnapshotReplication;
 import io.zeebe.db.impl.DefaultColumnFamily;

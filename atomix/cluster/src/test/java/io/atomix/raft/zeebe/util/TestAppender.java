@@ -15,7 +15,7 @@
  */
 package io.atomix.raft.zeebe.util;
 
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender;
 import io.atomix.raft.zeebe.ZeebeLogAppender.AppendListener;
 import io.atomix.storage.journal.Indexed;

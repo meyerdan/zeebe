@@ -15,6 +15,8 @@
  */
 package io.atomix.raft.zeebe;
 
+import io.atomix.storage.journal.ZeebeEntry;
+
 public class NoopEntryValidator implements EntryValidator {
 
   @Override

@@ -63,7 +63,7 @@ public abstract class AbstractJournalTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   protected final int entriesPerSegment;
-  protected SegmentedJournal<RaftLogEntry> journal;
+  protected SegmentedJournal journal;
 
   private final int maxSegmentSize;
   private final int cacheSize;
@@ -89,7 +89,7 @@ public abstract class AbstractJournalTest {
     return runs;
   }
 
-  protected SegmentedJournal<RaftLogEntry> createJournal() throws IOException {
+  protected SegmentedJournal createJournal() throws IOException {
     final SparseJournalIndex index = new SparseJournalIndex(5);
     return SegmentedJournal.<RaftLogEntry>builder()
         .withName("test")

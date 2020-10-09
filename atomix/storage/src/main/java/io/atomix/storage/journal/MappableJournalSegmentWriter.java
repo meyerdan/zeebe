@@ -63,7 +63,7 @@ class MappableJournalSegmentWriter implements JournalWriter {
       final MappedByteBuffer buffer =
           channel.map(FileChannel.MapMode.READ_WRITE, 0, segment.descriptor().maxSegmentSize());
       this.writer =
-          new MappedJournalSegmentWriter<>(buffer, segment, maxEntrySize, index, namespace);
+          new MappedJournalSegmentWriter(buffer, segment, maxEntrySize, index, namespace);
       writer.close();
       return buffer;
     } catch (final IOException e) {

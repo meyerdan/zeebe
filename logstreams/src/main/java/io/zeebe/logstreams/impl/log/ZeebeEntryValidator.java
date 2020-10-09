@@ -9,7 +9,7 @@ package io.zeebe.logstreams.impl.log;
 
 import io.atomix.raft.zeebe.EntryValidator;
 import io.atomix.raft.zeebe.ValidationResult;
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import org.agrona.concurrent.UnsafeBuffer;
 
 public class ZeebeEntryValidator implements EntryValidator {

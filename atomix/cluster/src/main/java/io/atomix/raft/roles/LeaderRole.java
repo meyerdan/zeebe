@@ -49,7 +49,7 @@ import io.atomix.raft.storage.log.entry.InitializeEntry;
 import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.raft.storage.system.Configuration;
 import io.atomix.raft.zeebe.ValidationResult;
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender;
 import io.atomix.storage.StorageException;
 import io.atomix.storage.journal.Indexed;

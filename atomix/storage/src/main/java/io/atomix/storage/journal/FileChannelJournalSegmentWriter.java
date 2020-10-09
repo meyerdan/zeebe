@@ -18,7 +18,6 @@ package io.atomix.storage.journal;
 
 import io.atomix.storage.StorageException;
 import io.atomix.storage.journal.index.JournalIndex;
-import io.atomix.storage.protocol.EntryEncoder;
 import io.atomix.utils.serializer.Namespace;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
@@ -47,6 +46,7 @@ import org.agrona.concurrent.UnsafeBuffer;
  */
 class FileChannelJournalSegmentWriter implements JournalWriter {
 
+  public static final EntrySerializer SERIALIZER = new EntrySerializer();
   private final FileChannel channel;
   private final JournalSegment segment;
   private final int maxEntrySize;
@@ -55,7 +55,6 @@ class FileChannelJournalSegmentWriter implements JournalWriter {
   private final ByteBuffer memory;
   private final long firstIndex;
   private Indexed<RaftLogEntry> lastEntry;
-  private final EntryEncoder encoder = new EntryEncoder();
   private final RaftLogEntryWriterReader entryWriterReader = new RaftLogEntryWriterReader();
 
   FileChannelJournalSegmentWriter(
@@ -105,7 +104,10 @@ class FileChannelJournalSegmentWriter implements JournalWriter {
       memory.clear();
       memory.position(Integer.BYTES + Integer.BYTES);
 
-      entryWriterReader.write(new UnsafeBuffer(memory), memory.position());
+      //      entryWriterReader.write(new UnsafeBuffer(memory), memory.position());
+
+      SERIALIZER.serializeRaftLogEntry(new UnsafeBuffer(memory), memory.position(), entry);
+
       //      try {
       //        namespace.serialize(entry, memory);
       //      } catch (final KryoException e) {

@@ -65,7 +65,7 @@ public class JournalSegment implements AutoCloseable {
     index = journalIndex;
     this.namespace = namespace;
     writer =
-        new MappableJournalSegmentWriter<>(
+        new MappableJournalSegmentWriter(
             openChannel(file.file()), this, maxEntrySize, index, namespace);
   }
 

@@ -34,7 +34,7 @@ import io.atomix.raft.storage.log.RaftLogReader;
 import io.atomix.raft.storage.log.RaftLogWriter;
 import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.raft.zeebe.ValidationResult;
-import io.atomix.raft.zeebe.ZeebeEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender.AppendListener;
 import io.atomix.raft.zeebe.util.TestAppender;
 import io.atomix.storage.StorageException;
