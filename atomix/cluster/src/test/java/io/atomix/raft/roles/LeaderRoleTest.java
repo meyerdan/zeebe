@@ -32,13 +32,13 @@ import io.atomix.raft.impl.RaftContext;
 import io.atomix.raft.metrics.RaftReplicationMetrics;
 import io.atomix.raft.storage.log.RaftLogReader;
 import io.atomix.raft.storage.log.RaftLogWriter;
-import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.raft.zeebe.ValidationResult;
-import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender.AppendListener;
 import io.atomix.raft.zeebe.util.TestAppender;
 import io.atomix.storage.StorageException;
 import io.atomix.storage.journal.Indexed;
+import io.atomix.storage.journal.RaftLogEntry;
+import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.utils.concurrent.SingleThreadContext;
 import io.zeebe.snapshots.raft.ReceivableSnapshotStore;
 import java.io.IOException;
@@ -49,6 +49,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.agrona.DirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -436,7 +438,7 @@ public class LeaderRoleTest {
               return new Indexed<>(1, zeebeEntry, 45);
             });
 
-    final ByteBuffer data = ByteBuffer.allocate(Integer.BYTES).putInt(0, 1);
+    final DirectBuffer data = new UnsafeBuffer(ByteBuffer.allocate(Integer.BYTES).putInt(0, 1));
     final CountDownLatch latch = new CountDownLatch(2);
     when(context.getEntryValidator())
         .thenReturn(
@@ -445,8 +447,6 @@ public class LeaderRoleTest {
                 assertThat(lastEntry.highestPosition()).isEqualTo(7);
                 assertThat(entry.lowestPosition()).isEqualTo(9);
                 assertThat(entry.highestPosition()).isEqualTo(9);
-                entry.data().rewind();
-                data.rewind();
                 assertThat(entry.data()).isEqualTo(data);
                 latch.countDown();
                 return ValidationResult.failure("expected");

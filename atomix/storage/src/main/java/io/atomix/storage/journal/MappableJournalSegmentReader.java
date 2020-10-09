@@ -54,8 +54,7 @@ class MappableJournalSegmentReader implements JournalReader {
   void map(final ByteBuffer buffer) {
     if (!(reader instanceof MappedJournalSegmentReader)) {
       final JournalReader reader = this.reader;
-      this.reader =
-          new MappedJournalSegmentReader(buffer, segment, maxEntrySize, index, namespace);
+      this.reader = new MappedJournalSegmentReader(buffer, segment, maxEntrySize, index, namespace);
       this.reader.reset(reader.getNextIndex());
       reader.close();
     }

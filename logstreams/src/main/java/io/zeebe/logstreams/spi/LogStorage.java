@@ -9,6 +9,7 @@ package io.zeebe.logstreams.spi;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import org.agrona.DirectBuffer;
 
 /** Log structured storage abstraction */
 public interface LogStorage {
@@ -58,7 +59,7 @@ public interface LogStorage {
    * @param blockBuffer the buffer containing a block of log entries to be written into storage
    */
   void append(
-      long lowestPosition, long highestPosition, ByteBuffer blockBuffer, AppendListener listener);
+      long lowestPosition, long highestPosition, DirectBuffer blockBuffer, AppendListener listener);
 
   /**
    * Open the storage. Called in the log conductor thread.

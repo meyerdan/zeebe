@@ -29,6 +29,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.Optional;
 import org.agrona.collections.MutableLong;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public final class StateControllerImplTest {
             new NoneSnapshotReplication(),
             l ->
                 Optional.ofNullable(
-                    new Indexed(l, new ZeebeEntry(1, System.currentTimeMillis(), 1, 10, null), 0)),
+                    new Indexed(l, new ZeebeEntry(1, System.currentTimeMillis(), 1, 10, new UnsafeBuffer()), 0)),
             db -> exporterPosition.get());
 
     autoCloseableRule.manage(snapshotController);

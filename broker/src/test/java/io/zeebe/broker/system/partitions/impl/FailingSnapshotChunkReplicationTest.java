@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -60,7 +61,7 @@ public final class FailingSnapshotChunkReplicationTest {
             replicator,
             l ->
                 Optional.of(
-                    new Indexed(l, new ZeebeEntry(1, System.currentTimeMillis(), 1, 10, null), 0)),
+                    new Indexed(l, new ZeebeEntry(1, System.currentTimeMillis(), 1, 10, new UnsafeBuffer()), 0)),
             db -> Long.MAX_VALUE);
     senderStore.addSnapshotListener(replicatorSnapshotController);
 
@@ -74,7 +75,7 @@ public final class FailingSnapshotChunkReplicationTest {
             replicator,
             l ->
                 Optional.ofNullable(
-                    new Indexed(l, new ZeebeEntry(1, System.currentTimeMillis(), 1, 10, null), 0)),
+                    new Indexed(l, new ZeebeEntry(1, System.currentTimeMillis(), 1, 10, new UnsafeBuffer()), 0)),
             db -> Long.MAX_VALUE);
     receiverStore.addSnapshotListener(receiverSnapshotController);
 

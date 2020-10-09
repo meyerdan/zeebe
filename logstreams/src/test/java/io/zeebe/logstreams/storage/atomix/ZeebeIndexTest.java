@@ -13,6 +13,7 @@ import io.atomix.raft.storage.log.entry.InitializeEntry;
 import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.storage.journal.Indexed;
 import java.nio.ByteBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.Test;
 
 public class ZeebeIndexTest {
@@ -223,7 +224,7 @@ public class ZeebeIndexTest {
   private static Indexed asZeebeEntry(final long index, final long lowestPos) {
     return new Indexed(
         index,
-        new ZeebeEntry(0, System.currentTimeMillis(), lowestPos, lowestPos, ByteBuffer.allocate(0)),
+        new ZeebeEntry(0, System.currentTimeMillis(), lowestPos, lowestPos, new UnsafeBuffer()),
         0);
   }
 }

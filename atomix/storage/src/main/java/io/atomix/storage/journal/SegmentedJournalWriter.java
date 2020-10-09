@@ -50,7 +50,7 @@ public class SegmentedJournalWriter implements JournalWriter {
   }
 
   @Override
-  public  Indexed<RaftLogEntry> append(final RaftLogEntry entry) {
+  public Indexed<RaftLogEntry> append(final RaftLogEntry entry) {
     try {
       return currentWriter.append(entry);
     } catch (final BufferOverflowException e) {

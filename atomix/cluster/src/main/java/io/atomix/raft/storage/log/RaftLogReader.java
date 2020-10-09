@@ -16,9 +16,9 @@
  */
 package io.atomix.raft.storage.log;
 
-import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.storage.journal.DelegatingJournalReader;
 import io.atomix.storage.journal.JournalReader;
+import io.atomix.storage.journal.RaftLogEntry;
 
 /** Raft log reader. */
 public class RaftLogReader extends DelegatingJournalReader<RaftLogEntry> {

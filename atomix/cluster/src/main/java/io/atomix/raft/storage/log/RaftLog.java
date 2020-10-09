@@ -16,10 +16,10 @@
  */
 package io.atomix.raft.storage.log;
 
-import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.storage.StorageLevel;
 import io.atomix.storage.journal.DelegatingJournal;
 import io.atomix.storage.journal.JournalReader;
+import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.storage.journal.SegmentedJournal;
 import io.atomix.storage.journal.index.JournalIndex;
 import io.atomix.utils.serializer.Namespace;

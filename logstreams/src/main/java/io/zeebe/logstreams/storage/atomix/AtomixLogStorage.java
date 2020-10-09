@@ -12,6 +12,7 @@ import io.zeebe.logstreams.spi.LogStorage;
 import io.zeebe.logstreams.spi.LogStorageReader;
 import java.nio.ByteBuffer;
 import java.util.NoSuchElementException;
+import org.agrona.DirectBuffer;
 
 public class AtomixLogStorage implements LogStorage {
   private final AtomixReaderFactory readerFactory;
@@ -44,7 +45,7 @@ public class AtomixLogStorage implements LogStorage {
   public void append(
       final long lowestPosition,
       final long highestPosition,
-      final ByteBuffer buffer,
+      final DirectBuffer buffer,
       final AppendListener listener) {
     final var optionalAppender = appenderSupplier.getAppender();
 

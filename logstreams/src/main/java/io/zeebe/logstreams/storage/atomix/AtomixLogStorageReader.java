@@ -164,8 +164,8 @@ public final class AtomixLogStorageReader implements LogStorageReader {
 
   private long wrapEntryData(final Indexed<ZeebeEntry> entry, final DirectBuffer dest) {
     final var data = entry.entry().data();
-    final var length = data.remaining();
-    dest.wrap(data, data.position(), data.remaining());
+    final var length = data.capacity();
+    dest.wrap(data, 0, data.capacity());
     return length;
   }
 }

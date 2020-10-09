@@ -37,6 +37,7 @@ import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import org.agrona.DirectBuffer;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
@@ -108,7 +109,7 @@ public final class AtomixLogStorageRule extends ExternalResource
   public void appendEntry(
       final long lowestPosition,
       final long highestPosition,
-      final ByteBuffer data,
+      final DirectBuffer data,
       final AppendListener listener) {
     final ZeebeEntry zbEntry =
         new ZeebeEntry(0, System.currentTimeMillis(), lowestPosition, highestPosition, data);

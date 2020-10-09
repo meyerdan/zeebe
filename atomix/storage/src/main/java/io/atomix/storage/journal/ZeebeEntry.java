@@ -17,8 +17,10 @@ package io.atomix.storage.journal;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
-import java.nio.ByteBuffer;
+import io.atomix.storage.protocol.EntryType;
 import java.util.Objects;
+import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
 
 /**
  * Stores an entry that contains serialized records, ordered by their position; the lowestPosition
@@ -29,11 +31,11 @@ import java.util.Objects;
  * was logged This gives state machines an approximation of time with which to react to the
  * application of entries to the state machine.
  */
-public class ZeebeEntry {
+public class ZeebeEntry implements EntryValue {
 
   private final long lowestPosition;
   private final long highestPosition;
-  private final ByteBuffer data;
+  private final DirectBuffer data;
   private final long term;
   private final long timestamp;
 
@@ -42,7 +44,7 @@ public class ZeebeEntry {
       final long timestamp,
       final long lowestPosition,
       final long highestPosition,
-      final ByteBuffer data) {
+      final DirectBuffer data) {
     this.term = term;
     this.timestamp = timestamp;
     this.lowestPosition = lowestPosition;
@@ -58,16 +60,29 @@ public class ZeebeEntry {
     return highestPosition;
   }
 
-  public ByteBuffer data() {
+  public DirectBuffer data() {
     return data;
   }
 
+  @Override
   public long term() {
     return term;
   }
 
+  @Override
   public long timestamp() {
     return timestamp;
+  }
+
+  @Override
+  public EntryType type() {
+    return EntryType.ZEEBE;
+  }
+
+  @Override
+  public int serialize(
+      final EntrySerializer serializer, final MutableDirectBuffer dest, final int offset) {
+    return serializer.serializeZeebeEntry(dest, offset, this);
   }
 
   @Override

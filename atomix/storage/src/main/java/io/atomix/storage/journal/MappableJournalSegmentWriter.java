@@ -44,8 +44,7 @@ class MappableJournalSegmentWriter implements JournalWriter {
     this.maxEntrySize = maxEntrySize;
     this.index = index;
     this.namespace = namespace;
-    writer =
-        new FileChannelJournalSegmentWriter(channel, segment, maxEntrySize, index, namespace);
+    writer = new FileChannelJournalSegmentWriter(channel, segment, maxEntrySize, index, namespace);
   }
 
   /**
@@ -62,8 +61,7 @@ class MappableJournalSegmentWriter implements JournalWriter {
       final JournalWriter writer = this.writer;
       final MappedByteBuffer buffer =
           channel.map(FileChannel.MapMode.READ_WRITE, 0, segment.descriptor().maxSegmentSize());
-      this.writer =
-          new MappedJournalSegmentWriter(buffer, segment, maxEntrySize, index, namespace);
+      this.writer = new MappedJournalSegmentWriter(buffer, segment, maxEntrySize, index, namespace);
       writer.close();
       return buffer;
     } catch (final IOException e) {
@@ -127,7 +125,7 @@ class MappableJournalSegmentWriter implements JournalWriter {
   }
 
   @Override
-  public  Indexed<RaftLogEntry> append(final RaftLogEntry entry) {
+  public Indexed<RaftLogEntry> append(final RaftLogEntry entry) {
     return writer.append(entry);
   }
 

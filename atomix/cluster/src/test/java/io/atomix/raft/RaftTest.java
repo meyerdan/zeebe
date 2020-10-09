@@ -44,12 +44,13 @@ import io.atomix.raft.snapshot.TestSnapshotStore;
 import io.atomix.raft.storage.RaftStorage;
 import io.atomix.raft.storage.log.RaftLogReader;
 import io.atomix.raft.storage.log.entry.InitializeEntry;
-import io.atomix.storage.journal.RaftLogEntry;
-import io.atomix.storage.journal.ZeebeEntry;
 import io.atomix.raft.zeebe.ZeebeLogAppender;
 import io.atomix.storage.StorageLevel;
 import io.atomix.storage.journal.Indexed;
 import io.atomix.storage.journal.JournalReader.Mode;
+import io.atomix.storage.journal.RaftLogEntry;
+import io.atomix.storage.journal.ZeebeEntry;
+import io.atomix.storage.protocol.EntryType;
 import io.atomix.utils.concurrent.SingleThreadContext;
 import io.atomix.utils.concurrent.ThreadContext;
 import java.io.File;
@@ -552,7 +553,7 @@ public class RaftTest extends ConcurrentTestCase {
       final RaftLogReader raftLogReader = server.getContext().getLog().openReader(0, Mode.COMMITS);
       raftLogReader.reset(raftLogReader.getLastIndex());
       final RaftLogEntry entry = raftLogReader.next().entry();
-      assert (entry instanceof InitializeEntry);
+      assert (entry.type() == EntryType.INITIALIZE);
       assertEquals(term, entry.term());
       transitionCompleted.countDown();
     }

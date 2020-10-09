@@ -16,8 +16,8 @@
  */
 package io.atomix.raft.storage.log;
 
-import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.storage.journal.DelegatingJournalWriter;
+import io.atomix.storage.journal.RaftLogEntry;
 import io.atomix.storage.journal.SegmentedJournalWriter;
 
 /** Raft log writer. */

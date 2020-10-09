@@ -18,6 +18,8 @@ package io.atomix.raft.zeebe;
 import io.atomix.storage.journal.Indexed;
 import io.atomix.storage.journal.ZeebeEntry;
 import java.nio.ByteBuffer;
+import org.agrona.DirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
 
 /**
  * A log appender provides a central entry point to append to the local Raft log such that it is
@@ -35,7 +37,12 @@ public interface ZeebeLogAppender {
    * @param data data to store in the entry
    */
   void appendEntry(
-      long lowestPosition, long highestPosition, ByteBuffer data, AppendListener appendListener);
+      long lowestPosition, long highestPosition, DirectBuffer data, AppendListener appendListener);
+
+  default void appendEntry(
+      long lowestPosition, long highestPosition, ByteBuffer data, AppendListener appendListener) {
+    appendEntry(lowestPosition, highestPosition, new UnsafeBuffer(data), appendListener);
+  }
 
   /**
    * An append listener can observe and be notified of different events related to the append
