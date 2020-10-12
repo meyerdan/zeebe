@@ -21,10 +21,15 @@ public final class WorkflowDeployer {
 
     try (final ZeebeClient client = clientBuilder.build()) {
 
-      final DeploymentEvent deploymentEvent =
-          client.newDeployCommand().addResourceFromClasspath("demoProcess.bpmn").send().join();
+       DeploymentEvent deploymentEvent =
+          client.newDeployCommand().addResourceFromClasspath("demoProcessSingleTask.bpmn").send().join();
 
       System.out.println("Deployment created with key: " + deploymentEvent.getKey());
+      
+      deploymentEvent =
+              client.newDeployCommand().addResourceFromClasspath("demoProcess.bpmn").send().join();
+
+          System.out.println("Deployment created with key: " + deploymentEvent.getKey());
     }
   }
 }

@@ -37,7 +37,7 @@ public final class DataCfg implements ConfigurationEntry {
 
   private DataSize logSegmentSize = DEFAULT_DATA_SIZE;
 
-  private Duration snapshotPeriod = Duration.ofMinutes(15);
+  private Duration snapshotPeriod = Duration.ofMinutes(1);
 
   private int logIndexDensity = 100;
 

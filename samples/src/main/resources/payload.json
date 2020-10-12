@@ -1,0 +1,57 @@
+{
+	"_id": "5f82c450ec5f793681be75af",
+	"index": 0,
+	"guid": "50c15f6b-8600-40e3-a2f9-a2c03ce6c3eb",
+	"isActive": false,
+	"balance": "$3,052.27",
+	"picture": "http://placehold.it/32x32",
+	"age": 37,
+	"eyeColor": "blue",
+	"name": {
+		"first": "Hendricks",
+		"last": "Potter"
+	},
+	"company": "QUANTASIS",
+	"email": "hendricks.potter@quantasis.net",
+	"phone": "+1 (813) 595-3844",
+	"address": "546 John Street, Mulino, Missouri, 7821",
+	"about": "Minim aliqua cupidatat sit esse incididunt. Deserunt id ut cillum aliquip ex aute mollit magna enim fugiat adipisicing fugiat. Consectetur fugiat minim nulla veniam officia consectetur cillum esse. Aliqua cillum cupidatat minim ullamco proident eiusmod irure ullamco. Dolor eiusmod cillum velit anim duis officia ea nulla mollit ullamco elit quis voluptate. Incididunt qui minim tempor ullamco ipsum consequat cillum aute.",
+	"registered": "Friday, September 27, 2019 5:04 AM",
+	"latitude": "-34.985133",
+	"longitude": "171.272287",
+	"tags": [
+		"et",
+		"ea",
+		"do",
+		"incididunt",
+		"elit"
+	],
+	"range": [
+		0,
+		1,
+		2,
+		3,
+		4,
+		5,
+		6,
+		7,
+		8,
+		9
+	],
+	"friends": [
+		{
+			"id": 0,
+			"name": "Casey Curtis"
+		},
+		{
+			"id": 1,
+			"name": "Hill Manning"
+		},
+		{
+			"id": 2,
+			"name": "Reed Carter"
+		}
+	],
+	"greeting": "Hello, Hendricks! You have 8 unread messages.",
+	"favoriteFruit": "strawberry"
+}

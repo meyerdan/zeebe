@@ -15,8 +15,14 @@ import io.zeebe.client.api.worker.JobHandler;
 import io.zeebe.client.api.worker.JobWorker;
 import java.time.Duration;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicLong;
 
 public final class JobWorkerCreator {
+	
+	static AtomicLong jobsExecuted = new AtomicLong();
+	
   public static void main(final String[] args) {
     final String broker = "127.0.0.1:26500";
 
@@ -37,6 +43,21 @@ public final class JobWorkerCreator {
               .timeout(Duration.ofSeconds(10))
               .open()) {
         System.out.println("Job worker opened and receiving jobs.");
+        
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+			
+        	long lastValue = 0;
+        	
+			@Override
+			public void run() {
+				long currentValue = jobsExecuted.get();
+				
+				System.out.println("jobs executed: "+(currentValue-lastValue)+" total: " + currentValue);
+				
+				lastValue = currentValue;
+				
+			}
+		}, 1000, 1000);
 
         // run until System.in receives exit command
         waitUntilSystemInput("exit");
@@ -59,8 +80,9 @@ public final class JobWorkerCreator {
     @Override
     public void handle(final JobClient client, final ActivatedJob job) {
       // here: business logic that is executed with every job
-      System.out.println(job);
+      //System.out.println(job);
       client.newCompleteCommand(job.getKey()).send().join();
+      jobsExecuted.incrementAndGet();
     }
   }
 }

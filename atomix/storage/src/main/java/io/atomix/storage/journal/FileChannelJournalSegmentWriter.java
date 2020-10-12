@@ -279,13 +279,13 @@ class FileChannelJournalSegmentWriter<E> implements JournalWriter<E> {
 
   @Override
   public void flush() {
-    try {
-      if (channel.isOpen()) {
-        channel.force(true);
-      }
-    } catch (final IOException e) {
-      throw new StorageException(e);
-    }
+//    try {
+//      if (channel.isOpen()) {
+//        channel.force(true);
+//      }
+//    } catch (final IOException e) {
+//      throw new StorageException(e);
+//    }
   }
 
   @Override
